@@ -24,6 +24,8 @@ export interface DomainConfig {
   xAxis: { label: string; format: (v: number) => string };
   yAxis: { label: string; format: (v: number) => string };
   costFn: (x: number) => number;
+  /** When set, counter shows this instead of costFn (e.g. marketing: annual spend) */
+  displayCostFn?: (x: number) => number;
   marginalCostFn: (x: number) => number;
   secondaryFn: (x: number) => number;
   secondaryLabel: string;

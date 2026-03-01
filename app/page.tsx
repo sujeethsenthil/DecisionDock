@@ -1,5 +1,6 @@
 import { HeroHeadline } from "@/components/hero/HeroHeadline";
 import { Calculator } from "@/components/calculator/Calculator";
+import { SiteFooter } from "@/components/footer/SiteFooter";
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
         <HeroHeadline />
         <Calculator />
       </div>
+      <SiteFooter />
     </main>
   );
 }

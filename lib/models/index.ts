@@ -1,13 +1,18 @@
 import type { DomainConfig, DomainKey } from "./types";
 import { uptimeConfig } from "./uptime-config";
+import { marketingConfig } from "./marketing-config";
+import { coverageConfig } from "./coverage-config";
+import { csatConfig } from "./csat-config";
 
-/** All domain configs. Phase 1: uptime only; Phase 2 replaces stubs with real configs. */
 export const DOMAINS: Record<DomainKey, DomainConfig> = {
   uptime: uptimeConfig,
-  marketing: { ...uptimeConfig, key: "marketing", label: "Marketing", description: "Explore marketing diminishing returns." },
-  coverage: { ...uptimeConfig, key: "coverage", label: "Coverage", description: "Explore coverage diminishing returns." },
-  csat: { ...uptimeConfig, key: "csat", label: "CSAT", description: "Explore CSAT diminishing returns." },
+  marketing: marketingConfig,
+  coverage: coverageConfig,
+  csat: csatConfig,
 };
 
 export type { DomainConfig, DomainKey, DataPoint, SliderConfig, ThresholdAnnotation } from "./types";
 export { uptimeConfig } from "./uptime-config";
+export { marketingConfig } from "./marketing-config";
+export { coverageConfig } from "./coverage-config";
+export { csatConfig } from "./csat-config";
