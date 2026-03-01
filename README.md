@@ -32,7 +32,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Tests:** `pnpm test` runs Vitest (uptime/marketing/coverage/csat anchors, format, engine, threshold logic).
 - **Accessibility:** Slider has `aria-label` and `aria-valuetext`; cost uses `aria-live="polite"`; focus visible on interactive elements. Radix Slider supports arrow keys and Home/End.
 - **Performance:** Target Lighthouse >90, first meaningful paint <2s, bundle <250kB gzipped. Run `pnpm build` and inspect `out/` or use Lighthouse on a deployed URL.
-- **Deploy (Vercel):** Build outputs static files to `out/`. Connect the repo to Vercel; build command `pnpm build`, output directory `out`. No env vars. For social previews, add `public/og-image.png` (1200×630); Open Graph and Twitter metadata are set in `app/layout.tsx`.
+- **Deploy (Vercel):** Build outputs static files to `out/`. See **[Deploy to Vercel](docs/DEPLOY_VERCEL.md)** for the full phased plan (connect repo, configure, deploy, optional custom domain). Build command `pnpm build`; no env vars. For social previews, add `public/og-image.png` (1200×630); Open Graph and Twitter metadata are set in `app/layout.tsx`.
 
 ## Repo hygiene
 
