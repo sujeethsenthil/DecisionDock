@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
 import type { ThresholdAnnotation } from "@/lib/models";
 
 interface InsightCardsProps {
@@ -26,21 +27,22 @@ export function InsightCards({ thresholds }: InsightCardsProps) {
               },
             }}
             exit={{ opacity: 0, transition: { duration: 0.2 } }}
-            className="rounded-lg border border-[#D0D5DD] bg-white p-4 shadow-sm"
           >
-            <div className="flex items-start gap-3">
-              <span className="text-xl" aria-hidden>
-                {t.icon}
-              </span>
-              <div>
-                <h3 className="text-lg font-semibold text-[#1B2A4A]">
-                  {t.title}
-                </h3>
-                <p className="mt-1 text-sm leading-relaxed text-[#333333]">
-                  {t.body}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-xl" aria-hidden>
+                  {t.icon}
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#1B2A4A]">
+                    {t.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-[#333333]">
+                    {t.body}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
           </motion.div>
         ))}
       </AnimatePresence>

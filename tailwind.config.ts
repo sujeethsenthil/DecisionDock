@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        calc: "900px", // two-column calculator layout
+      },
       colors: {
         navy: "#1B2A4A",
         "dark-gray": "#333333",

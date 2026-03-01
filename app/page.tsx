@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/footer/SiteFooter";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen" id="main-content" aria-label="Nines Calculator">
       <div className="mx-auto max-w-[1200px] px-8 py-12 lg:px-8">
         <HeroHeadline />
         <Calculator />

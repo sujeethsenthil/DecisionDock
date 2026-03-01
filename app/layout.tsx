@@ -19,6 +19,19 @@ export const metadata: Metadata = {
   title: "The Nines Calculator | DecisionDock",
   description:
     "Visualize the exponential cost of incremental perfection. One slider, four domains.",
+  openGraph: {
+    title: "The Nines Calculator | DecisionDock",
+    description:
+      "Visualize the exponential cost of incremental perfection. One slider, four domains.",
+    type: "website",
+    images: ["/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Nines Calculator | DecisionDock",
+    description:
+      "Visualize the exponential cost of incremental perfection. One slider, four domains.",
+  },
 };
 
 export default function RootLayout({

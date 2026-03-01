@@ -7,8 +7,8 @@ import { generateCurveData } from "@/lib/engine";
 import { CostCurveChart } from "./CostCurveChart";
 import { ResultsPanel } from "./ResultsPanel";
 import { DomainTabs } from "./DomainTabs";
-import { AnimatedCounter } from "./AnimatedCounter";
 import { InsightCards } from "./InsightCards";
+import { Card } from "@/components/ui/card";
 
 const CHART_TITLES: Record<DomainKey, string> = {
   uptime: "Annual Cost of Uptime Targets",
@@ -49,8 +49,9 @@ export function Calculator() {
   return (
     <div className="mt-12">
       <DomainTabs activeDomain={activeDomain} onDomainChange={handleDomainChange} />
-      <section className="mt-8 flex flex-col gap-8 lg:mt-12 lg:flex-row lg:gap-8 max-[700px]:[&_.chart-col]:order-2 max-[700px]:[&_.results-col]:order-1">
-        <div className="chart-col min-w-0 flex-1 lg:min-w-[65%]">
+
+      <div className="mt-8 grid grid-cols-1 gap-8 md:mt-12 md:grid-cols-[65fr_35fr]">
+        <div className="min-h-[400px] min-w-0">
           <CostCurveChart
             data={curveData}
             config={config}
@@ -58,8 +59,8 @@ export function Calculator() {
             chartTitle={CHART_TITLES[activeDomain]}
           />
         </div>
-        <aside className="results-col flex shrink-0 flex-col lg:w-[35%] lg:max-w-[400px]">
-          <div className="rounded-lg border border-[#D0D5DD] bg-white p-6 shadow-sm">
+        <div className="min-w-0">
+          <Card className="p-6">
             <ResultsPanel
               config={config}
               sliderValue={sliderValue}
@@ -68,14 +69,21 @@ export function Calculator() {
               secondaryLabel={config.secondaryLabel}
               secondaryValue={config.secondaryFormat(secondaryMetric)}
             />
-          </div>
-        </aside>
-      </section>
-      {activeThresholds.length > 0 && (
-        <div className="mt-12">
-          <InsightCards thresholds={activeThresholds} />
+          </Card>
         </div>
-      )}
+      </div>
+
+      {/* BELOW grid, full width: aligned block for insight cards + methodology */}
+      <section className="mt-12 w-full max-w-full" aria-label="Insights and methodology">
+        {activeThresholds.length > 0 && (
+          <div className="mb-6">
+            <InsightCards thresholds={activeThresholds} />
+          </div>
+        )}
+        <p className="text-[12px] leading-relaxed text-[#555555] max-w-[65ch] pl-4">
+          {config.source}
+        </p>
+      </section>
     </div>
   );
 }

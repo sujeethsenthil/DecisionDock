@@ -38,11 +38,11 @@ export function CostCurveChart({
   sliderValue,
   chartTitle,
 }: CostCurveChartProps) {
-  const { zones, sliderConfig, yAxis, source } = config;
+  const { zones, sliderConfig, yAxis } = config;
   const refLineColor = getZoneColor(sliderValue, zones);
 
   return (
-    <div className="relative min-h-[280px] w-full bg-white lg:min-h-[400px]" style={{ height: CHART_HEIGHT }}>
+    <div className="relative min-h-[280px] w-full overflow-hidden bg-white lg:min-h-[400px]" style={{ height: CHART_HEIGHT }}>
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <AreaChart
           data={data}
@@ -60,6 +60,7 @@ export function CostCurveChart({
             dataKey="x"
             type="number"
             domain={[sliderConfig.min, sliderConfig.max]}
+            ticks={config.key === "uptime" ? [2, 3, 4, 5, 6] : undefined}
             tickFormatter={(v) => config.xAxis.format(v)}
             tick={{ fontSize: 12, fill: COLORS.medGray }}
             axisLine={{ stroke: COLORS.borderGray }}
@@ -69,7 +70,7 @@ export function CostCurveChart({
           <YAxis
             type="number"
             tickFormatter={(v) => yAxis.format(v)}
-            tick={{ fontSize: 12, fill: COLORS.medGray, fontVariantNumeric: "tabular-nums" }}
+            tick={{ fontSize: 12, fill: COLORS.medGray }}
             axisLine={false}
             tickLine={false}
             width={48}
@@ -79,19 +80,19 @@ export function CostCurveChart({
             x1={sliderConfig.min}
             x2={zones.value}
             fill={COLORS.blue}
-            fillOpacity={0.05}
+            fillOpacity={0.04}
           />
           <ReferenceArea
             x1={zones.value}
             x2={zones.caution}
             fill={COLORS.amber}
-            fillOpacity={0.05}
+            fillOpacity={0.04}
           />
           <ReferenceArea
             x1={zones.caution}
             x2={sliderConfig.max}
             fill={COLORS.red}
-            fillOpacity={0.05}
+            fillOpacity={0.04}
           />
           <Area
             type="monotone"
@@ -139,10 +140,9 @@ export function CostCurveChart({
           />
         </AreaChart>
       </ResponsiveContainer>
-      {/* Chart title and source inside chart boundary (screenshot-ready) */}
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 pb-14">
-        <h2 className="text-base font-bold text-[#1B2A4A]">{chartTitle}</h2>
-        <p className="text-right text-xs text-[#555555] max-w-[70%] ml-auto">{source}</p>
+      {/* Chart title only inside chart boundary; methodology lives below grid */}
+      <div className="pointer-events-none absolute left-0 top-0 max-w-[85%] p-4">
+        <h2 className="text-base font-bold leading-tight text-[#1B2A4A]">{chartTitle}</h2>
       </div>
     </div>
   );

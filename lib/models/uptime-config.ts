@@ -3,9 +3,12 @@ import { uptimeCost, uptimeDowntimeMinutes, uptimeMarginalCost } from "./uptime"
 import { formatPercentage } from "@/lib/format";
 import { UPTIME_ZONES } from "@/lib/constants";
 
+/** Format nines as availability %; never show 100% (use 99.9999% for 6 nines). */
 function ninesToPercent(nines: number): string {
   const pct = (1 - Math.pow(10, -nines)) * 100;
-  return formatPercentage(pct, 2);
+  const capped = Math.min(pct, 99.9999);
+  const decimals = capped >= 99.99 ? 4 : 2;
+  return formatPercentage(capped, decimals);
 }
 
 const thresholds: ThresholdAnnotation[] = [

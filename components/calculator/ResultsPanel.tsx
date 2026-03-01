@@ -60,26 +60,34 @@ export function ResultsPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      <div aria-live="polite" aria-atomic="true">
+      <div className="space-y-1" aria-live="polite" aria-atomic="true">
         <p className="text-sm text-[#555555]">Estimated annual cost</p>
-        <p className="font-mono text-3xl font-bold text-[#1B2A4A] lg:text-[3rem]">
+        <p
+          className="font-mono text-5xl font-bold text-[#1B2A4A]"
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
           <AnimatedCounter value={displayCost} />
         </p>
       </div>
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-[#555555]">
-          <span>{sliderConfig.format(sliderConfig.min)}</span>
-          <span className="font-medium text-[#333333]">
+        <div className="grid grid-cols-3 gap-2 text-sm text-[#555555]">
+          <span className="truncate text-left" title={sliderConfig.format(sliderConfig.min)}>
+            {sliderConfig.format(sliderConfig.min)}
+          </span>
+          <span className="font-medium text-[#333333] truncate text-center" title={sliderConfig.format(sliderValue)}>
             {sliderConfig.format(sliderValue)}
           </span>
-          <span>{sliderConfig.format(sliderConfig.max)}</span>
+          <span className="truncate text-right" title={sliderConfig.format(sliderConfig.max)}>
+            {sliderConfig.format(sliderConfig.max)}
+          </span>
         </div>
         <Slider
           {...sliderProps}
           aria-label={`Set target ${config.label.toLowerCase()}`}
+          aria-valuetext={sliderConfig.format(sliderValue)}
         />
       </div>
-      <div>
+      <div className="space-y-1">
         <p className="text-sm text-[#555555]">{secondaryLabel}</p>
         <p
           className="font-mono text-2xl font-bold text-[#333333]"
