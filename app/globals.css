@@ -1,0 +1,25 @@
+@tailwind base;
+@layer base {
+  :root {
+    --background: 242 244 247; /* #F2F4F7 light-gray */
+    --foreground: 27 42 74; /* navy */
+    --muted: 85 85 85; /* med-gray */
+    --border: 208 213 221; /* border-gray */
+    --blue: 59 130 246;
+    --amber: 245 158 11;
+    --red: 239 68 68;
+    --radius: 8px;
+  }
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-[#F2F4F7] text-[#333333];
+  }
+}
+
+/* Chart gradient - defined in SVG defs per component */
+/* Tabular numbers for all numeric displays */
+[data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
