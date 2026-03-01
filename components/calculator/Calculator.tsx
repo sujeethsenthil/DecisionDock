@@ -1,89 +1,97 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { DOMAINS } from "@/lib/models";
 import type { DomainKey } from "@/lib/models";
 import { generateCurveData } from "@/lib/engine";
+import { formatCurrency } from "@/lib/format";
 import { CostCurveChart } from "./CostCurveChart";
 import { ResultsPanel } from "./ResultsPanel";
 import { DomainTabs } from "./DomainTabs";
 import { InsightCards } from "./InsightCards";
-import { Card } from "@/components/ui/card";
-
-const CHART_TITLES: Record<DomainKey, string> = {
-  uptime: "Annual Cost of Uptime Targets",
-  marketing: "Effective Cost vs. Ad Spend",
-  coverage: "Cumulative Effort vs. Test Coverage",
-  csat: "Annual Support Cost vs. CSAT",
-};
 
 export function Calculator() {
-  const [activeDomain, setActiveDomain] = useState<DomainKey>("uptime");
-  const config = DOMAINS[activeDomain];
-  const defaultSlider = config.sliderConfig.default;
-  const [sliderValue, setSliderValue] = useState(defaultSlider);
+  // ─── Two state values. That's it. ───
+  const [domain, setDomain] = useState<DomainKey>("uptime");
+  const [slider, setSlider] = useState<number>(DOMAINS.uptime.slider.default);
 
+  const config = DOMAINS[domain];
+
+  // Atomic tab switch — both states update in one handler, no useEffect
   const handleDomainChange = useCallback((newDomain: DomainKey) => {
-    setActiveDomain(newDomain);
-    setSliderValue(DOMAINS[newDomain].sliderConfig.default);
+    setDomain(newDomain);
+    setSlider(DOMAINS[newDomain].slider.default);
   }, []);
 
+  // ─── All derived data via useMemo ───
   const curveData = useMemo(() => generateCurveData(config), [config]);
+
   const displayCost = useMemo(
-    () => (config.displayCostFn ?? config.costFn)(sliderValue),
-    [config, sliderValue]
+    () => config.displayFn(slider),
+    [config, slider]
   );
-  const secondaryMetric = useMemo(
-    () => config.secondaryFn(sliderValue),
-    [config, sliderValue]
+
+  const secondary = useMemo(
+    () => config.secondaryFn(slider),
+    [config, slider]
+  );
+
+  const marginalCost = useMemo(
+    () => config.marginalFn(slider),
+    [config, slider]
   );
 
   const activeThresholds = useMemo(
     () =>
       config.thresholds.filter((t) =>
-        t.direction === "above" ? sliderValue >= t.trigger : sliderValue <= t.trigger
+        t.dir === "above" ? slider >= t.trigger : slider <= t.trigger
       ),
-    [config, sliderValue]
+    [config, slider]
   );
 
   return (
-    <div className="mt-12">
-      <DomainTabs activeDomain={activeDomain} onDomainChange={handleDomainChange} />
+    <div>
+      {/* Tabs */}
+      <DomainTabs activeDomain={domain} onDomainChange={handleDomainChange} />
 
-      <div className="mt-8 grid grid-cols-1 gap-8 md:mt-12 md:grid-cols-[65fr_35fr]">
-        <div className="min-h-[400px] min-w-0">
+      {/* Two-column layout: chart left, results right */}
+      <div
+        style={{
+          display: "flex",
+          gap: 32,
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+          marginTop: 32,
+        }}
+      >
+        {/* LEFT: Chart (62%) */}
+        <div style={{ flex: "1 1 62%", minWidth: 500 }}>
           <CostCurveChart
             data={curveData}
             config={config}
-            sliderValue={sliderValue}
-            chartTitle={CHART_TITLES[activeDomain]}
+            sliderValue={slider}
           />
         </div>
-        <div className="min-w-0">
-          <Card className="p-6">
-            <ResultsPanel
-              config={config}
-              sliderValue={sliderValue}
-              onSliderChange={setSliderValue}
-              displayCost={displayCost}
-              secondaryLabel={config.secondaryLabel}
-              secondaryValue={config.secondaryFormat(secondaryMetric)}
-            />
-          </Card>
+
+        {/* RIGHT: Results panel (30%) */}
+        <div style={{ flex: "1 1 30%", minWidth: 280 }}>
+          <ResultsPanel
+            config={config}
+            sliderValue={slider}
+            onSliderChange={setSlider}
+            displayCost={displayCost}
+            secondaryValue={config.secondaryFmt(secondary)}
+            marginalCost={marginalCost}
+          />
         </div>
       </div>
 
-      {/* BELOW grid, full width: aligned block for insight cards + methodology */}
-      <section className="mt-12 w-full max-w-full" aria-label="Insights and methodology">
-        {activeThresholds.length > 0 && (
-          <div className="mb-6">
-            <InsightCards thresholds={activeThresholds} />
-          </div>
-        )}
-        <p className="text-[12px] leading-relaxed text-[#555555] max-w-[65ch] pl-4">
-          {config.source}
-        </p>
-      </section>
+      {/* Threshold annotations (below grid, full width) */}
+      {activeThresholds.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <InsightCards thresholds={activeThresholds} />
+        </div>
+      )}
     </div>
   );
 }

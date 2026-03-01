@@ -1,19 +1,12 @@
-import Link from "next/link";
+import { COLORS } from "@/lib/constants";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-[#D0D5DD] bg-[#F2F4F7] px-8 py-12">
-      <div className="mx-auto max-w-[1200px]">
-        <p className="text-sm text-[#555555]">
-          Part of the{" "}
-          <Link
-            href="/"
-            className="font-medium text-[#3B82F6] underline-offset-4 hover:underline"
-          >
-            DecisionDock
-          </Link>{" "}
-          portfolio.
-        </p>
+    <footer style={{ marginTop: 64, textAlign: "center", paddingBottom: 32 }}>
+      <div style={{ fontSize: 12, color: COLORS.med }}>
+        Part of the{" "}
+        <span style={{ fontWeight: 600, color: COLORS.navy }}>DecisionDock</span>{" "}
+        portfolio — Decision frameworks for engineering leaders
       </div>
     </footer>
   );

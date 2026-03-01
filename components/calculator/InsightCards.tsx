@@ -1,51 +1,40 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
 import type { ThresholdAnnotation } from "@/lib/models";
+import { COLORS } from "@/lib/constants";
 
 interface InsightCardsProps {
   thresholds: ThresholdAnnotation[];
 }
 
 export function InsightCards({ thresholds }: InsightCardsProps) {
+  if (thresholds.length === 0) return null;
+
   return (
-    <div className="flex flex-col gap-4">
-      <AnimatePresence mode="popLayout">
-        {thresholds.map((t) => (
-          <motion.div
-            key={`${t.trigger}-${t.title}`}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{
-              opacity: 1,
-              x: 0,
-              transition: {
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-                duration: 0.3,
-              },
-            }}
-            exit={{ opacity: 0, transition: { duration: 0.2 } }}
-          >
-            <Card className="p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-xl" aria-hidden>
-                  {t.icon}
-                </span>
-                <div>
-                  <h3 className="text-lg font-semibold text-[#1B2A4A]">
-                    {t.title}
-                  </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-[#333333]">
-                    {t.body}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+      {thresholds.map((t, i) => (
+        <div
+          key={`${t.trigger}-${i}`}
+          style={{
+            flex: "1 1 calc(50% - 6px)",
+            minWidth: 280,
+            background: COLORS.white,
+            borderRadius: 12,
+            border: `1px solid ${COLORS.border}`,
+            padding: "16px 20px",
+            borderLeft: `4px solid ${COLORS.amber}`,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.navy }}>
+            <span style={{ marginRight: 8 }}>{t.icon}</span>
+            {t.title}
+          </div>
+          <div style={{ fontSize: 13, color: COLORS.dark, marginTop: 4, lineHeight: 1.5 }}>
+            {t.body}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

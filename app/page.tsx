@@ -4,12 +4,12 @@ import { SiteFooter } from "@/components/footer/SiteFooter";
 
 export default function Home() {
   return (
-    <main className="min-h-screen" id="main-content" aria-label="Nines Calculator">
-      <div className="mx-auto max-w-[1200px] px-8 py-12 lg:px-8">
+    <main style={{ minHeight: "100vh" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 32px" }}>
         <HeroHeadline />
         <Calculator />
+        <SiteFooter />
       </div>
-      <SiteFooter />
     </main>
   );
 }

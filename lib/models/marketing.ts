@@ -1,36 +1,61 @@
+import type { DomainConfig } from "./types";
+import { formatCurrency, formatCurrencyShort } from "../format";
+
 const ALPHA = 1.5;
 const K = 50000;
 const MAX_CONV = 5000;
 
-/** Baseline CPA at $10K/mo for effective-cost scaling (~$25) */
-const BASELINE_CPA = 25;
+export const mktConversions = (s: number): number =>
+  MAX_CONV * Math.pow(s, ALPHA) / (Math.pow(K, ALPHA) + Math.pow(s, ALPHA));
 
-export function marketingConversions(spend: number): number {
-  return (
-    (MAX_CONV * Math.pow(spend, ALPHA)) /
-    (Math.pow(K, ALPHA) + Math.pow(spend, ALPHA))
-  );
-}
+export const mktCPA = (s: number): number => {
+  const c = mktConversions(s);
+  return c > 0 ? s / c : 0;
+};
 
-export function marketingCPA(spend: number): number {
-  const conv = marketingConversions(spend);
-  return conv > 0 ? spend / conv : 0;
-}
-
-export function marketingMarginalCPA(spend: number): number {
+export const mktMarginalCPA = (s: number): number => {
   const delta = 500;
-  const deltaConv =
-    marketingConversions(spend + delta) - marketingConversions(spend);
-  return deltaConv > 0 ? delta / deltaConv : Infinity;
-}
+  const dc = mktConversions(s + delta) - mktConversions(s);
+  return dc > 0 ? delta / dc : Infinity;
+};
 
-/**
- * Effective annual cost for chart Y-axis (steepens with saturation).
- * Y = 12 * spend * (1 + marginalCPA / baselineCPA) so curve rises faster at high spend.
- */
-export function marketingEffectiveAnnualCost(spend: number): number {
-  const annualSpend = 12 * spend;
-  const marginal = marketingMarginalCPA(spend);
-  const ratio = Math.min(marginal / BASELINE_CPA, 20);
-  return annualSpend * (1 + (ratio - 1) * 0.15);
-}
+export const marketingConfig: DomainConfig = {
+  key: "marketing",
+  label: "Marketing",
+  desc: "Ad spend saturation curve",
+  slider: {
+    min: 5000, max: 500000, step: 5000, default: 25000,
+    format: (v) => formatCurrencyShort(v) + "/mo",
+  },
+  xLabel: "Monthly Ad Spend",
+  yLabel: "Cost per Acquisition",
+  xFmt: formatCurrencyShort,
+  yFmt: formatCurrency,
+  costFn: (s) => s * 12,
+  displayFn: mktCPA,
+  marginalFn: mktMarginalCPA,
+  secondaryFn: mktCPA,
+  secondaryLabel: "Average CPA",
+  secondaryFmt: formatCurrency,
+  chartTitle: "Cost per Acquisition vs. Ad Spend",
+  source: "Sources: WordStream CPA benchmarks, Meta Robyn, Saxifrage Blog",
+  zones: { value: 25000, caution: 100000 },
+  logScale: true,
+  thresholds: [
+    {
+      trigger: 25000, dir: "above", icon: "📉",
+      title: "Marginal CPA rising",
+      body: "Average CPA is ~$30, but each additional $1K now costs $38+ per conversion.",
+    },
+    {
+      trigger: 100000, dir: "above", icon: "⚠️",
+      title: "Deep saturation",
+      body: "Marginal CPA has doubled. You're paying $85+ for each additional conversion.",
+    },
+    {
+      trigger: 250000, dir: "above", icon: "🛑",
+      title: "ROAS below breakeven",
+      body: "Marginal ROAS approaches 1.0× or below. Each new dollar may cost more than it generates.",
+    },
+  ],
+};

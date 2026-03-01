@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { Slider } from "@/components/ui/slider";
 import type { DomainConfig } from "@/lib/models";
+import { COLORS, getZoneColor, getZoneBg, getZoneLabel } from "@/lib/constants";
+import { formatCurrency } from "@/lib/format";
+import { toLogScale, fromLogScale } from "@/lib/engine";
 import { AnimatedCounter } from "./AnimatedCounter";
 
 interface ResultsPanelProps {
@@ -10,18 +12,8 @@ interface ResultsPanelProps {
   sliderValue: number;
   onSliderChange: (value: number) => void;
   displayCost: number;
-  secondaryLabel: string;
   secondaryValue: string;
-}
-
-function logScalePosition(value: number, min: number, max: number): number {
-  if (value <= min) return 0;
-  return (100 * Math.log(value / min)) / Math.log(max / min);
-}
-
-function logScaleValue(position: number, min: number, max: number): number {
-  if (position <= 0) return min;
-  return min * Math.pow(max / min, position / 100);
+  marginalCost: number;
 }
 
 export function ResultsPanel({
@@ -29,73 +21,131 @@ export function ResultsPanel({
   sliderValue,
   onSliderChange,
   displayCost,
-  secondaryLabel,
   secondaryValue,
+  marginalCost,
 }: ResultsPanelProps) {
-  const { sliderConfig } = config;
-  const isLogScale = config.key === "marketing";
+  const { slider: sc, zones } = config;
+  const isLog = config.logScale;
+  const zc = getZoneColor(sliderValue, zones);
 
-  const sliderProps = useMemo(() => {
-    if (isLogScale) {
-      const min = sliderConfig.min;
-      const max = sliderConfig.max;
-      const position = logScalePosition(sliderValue, min, max);
-      return {
-        value: [position] as [number],
-        min: 0,
-        max: 100,
-        step: 0.5,
-        onValueChange: ([p]: number[]) =>
-          onSliderChange(Math.round(logScaleValue(p, min, max) / 1000) * 1000),
-      };
+  const sliderMin = isLog ? 0 : sc.min;
+  const sliderMax = isLog ? 100 : sc.max;
+  const sliderStep = isLog ? 0.5 : sc.step;
+  const sliderDisplay = isLog ? toLogScale(sliderValue, sc.min, sc.max) : sliderValue;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = parseFloat(e.target.value);
+    if (isLog) {
+      onSliderChange(Math.round(fromLogScale(v, sc.min, sc.max) / 1000) * 1000);
+    } else {
+      onSliderChange(v);
     }
-    return {
-      value: [sliderValue] as [number],
-      min: sliderConfig.min,
-      max: sliderConfig.max,
-      step: sliderConfig.step,
-      onValueChange: ([v]: number[]) => onSliderChange(v),
-    };
-  }, [isLogScale, sliderConfig, sliderValue, onSliderChange]);
+  };
+
+  const pct = ((sliderDisplay - sliderMin) / (sliderMax - sliderMin)) * 100;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="space-y-1" aria-live="polite" aria-atomic="true">
-        <p className="text-sm text-[#555555]">Estimated annual cost</p>
-        <p
-          className="font-mono text-5xl font-bold text-[#1B2A4A]"
-          style={{ fontVariantNumeric: "tabular-nums" }}
+    <div
+      style={{
+        background: COLORS.white,
+        borderRadius: 16,
+        border: `1px solid ${COLORS.border}`,
+        padding: 32,
+        display: "flex",
+        flexDirection: "column",
+        gap: 28,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      }}
+    >
+      {/* Cost counter */}
+      <div>
+        <div
+          style={{
+            fontSize: 13, color: COLORS.med, marginBottom: 6,
+            fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em",
+          }}
         >
-          <AnimatedCounter value={displayCost} />
-        </p>
-      </div>
-      <div className="space-y-2">
-        <div className="grid grid-cols-3 gap-2 text-sm text-[#555555]">
-          <span className="truncate text-left" title={sliderConfig.format(sliderConfig.min)}>
-            {sliderConfig.format(sliderConfig.min)}
-          </span>
-          <span className="font-medium text-[#333333] truncate text-center" title={sliderConfig.format(sliderValue)}>
-            {sliderConfig.format(sliderValue)}
-          </span>
-          <span className="truncate text-right" title={sliderConfig.format(sliderConfig.max)}>
-            {sliderConfig.format(sliderConfig.max)}
-          </span>
+          {config.key === "coverage" ? "Cumulative Effort" : "Estimated Annual Cost"}
         </div>
-        <Slider
-          {...sliderProps}
+        <div aria-live="polite" aria-atomic="true">
+          <AnimatedCounter value={displayCost} color={zc} />
+        </div>
+        <div
+          style={{
+            display: "inline-block", marginLeft: 12, fontSize: 12, fontWeight: 600,
+            padding: "3px 10px", borderRadius: 20, color: zc,
+            background: getZoneBg(sliderValue, zones),
+          }}
+        >
+          {getZoneLabel(sliderValue, zones)}
+        </div>
+      </div>
+
+      {/* Slider */}
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+          <span style={{ fontSize: 12, color: COLORS.med }}>{sc.format(sc.min)}</span>
+          <span
+            style={{
+              fontSize: 14, fontWeight: 700, color: zc,
+              fontFamily: "var(--font-jetbrains), 'JetBrains Mono', monospace",
+            }}
+          >
+            {sc.format(sliderValue)}
+          </span>
+          <span style={{ fontSize: 12, color: COLORS.med }}>{sc.format(sc.max)}</span>
+        </div>
+        <input
+          type="range"
+          min={sliderMin}
+          max={sliderMax}
+          step={sliderStep}
+          value={sliderDisplay}
+          onChange={handleChange}
           aria-label={`Set target ${config.label.toLowerCase()}`}
-          aria-valuetext={sliderConfig.format(sliderValue)}
+          className="nines-slider"
+          style={{
+            width: "100%", height: 8,
+            WebkitAppearance: "none", appearance: "none",
+            borderRadius: 8, outline: "none", cursor: "pointer",
+            background: `linear-gradient(to right, ${COLORS.blue} 0%, ${COLORS.amber} ${Math.min(pct + 10, 100)}%, ${COLORS.red} 100%)`,
+          }}
         />
       </div>
-      <div className="space-y-1">
-        <p className="text-sm text-[#555555]">{secondaryLabel}</p>
-        <p
-          className="font-mono text-2xl font-bold text-[#333333]"
-          style={{ fontVariantNumeric: "tabular-nums" }}
-          data-numeric
+
+      {/* Divider */}
+      <div style={{ height: 1, background: COLORS.border }} />
+
+      {/* Secondary metric */}
+      <div>
+        <div style={{ fontSize: 13, color: COLORS.med, marginBottom: 4, fontWeight: 500 }}>
+          {config.secondaryLabel}
+        </div>
+        <div
+          style={{
+            fontSize: 28, fontWeight: 700, color: COLORS.navy,
+            fontFamily: "var(--font-jetbrains), 'JetBrains Mono', monospace",
+            fontVariantNumeric: "tabular-nums",
+          }}
         >
           {secondaryValue}
-        </p>
+        </div>
+      </div>
+
+      {/* Marginal cost */}
+      <div>
+        <div style={{ fontSize: 13, color: COLORS.med, marginBottom: 4, fontWeight: 500 }}>
+          Marginal Cost of Next Step
+        </div>
+        <div
+          style={{
+            fontSize: 28, fontWeight: 700, color: COLORS.red,
+            fontFamily: "var(--font-jetbrains), 'JetBrains Mono', monospace",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {formatCurrency(marginalCost)}
+        </div>
       </div>
     </div>
   );

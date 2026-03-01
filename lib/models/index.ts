@@ -1,8 +1,8 @@
 import type { DomainConfig, DomainKey } from "./types";
-import { uptimeConfig } from "./uptime-config";
-import { marketingConfig } from "./marketing-config";
-import { coverageConfig } from "./coverage-config";
-import { csatConfig } from "./csat-config";
+import { uptimeConfig } from "./uptime";
+import { marketingConfig } from "./marketing";
+import { coverageConfig } from "./coverage";
+import { csatConfig } from "./csat";
 
 export const DOMAINS: Record<DomainKey, DomainConfig> = {
   uptime: uptimeConfig,
@@ -11,8 +11,6 @@ export const DOMAINS: Record<DomainKey, DomainConfig> = {
   csat: csatConfig,
 };
 
-export type { DomainConfig, DomainKey, DataPoint, SliderConfig, ThresholdAnnotation } from "./types";
-export { uptimeConfig } from "./uptime-config";
-export { marketingConfig } from "./marketing-config";
-export { coverageConfig } from "./coverage-config";
-export { csatConfig } from "./csat-config";
+export const DOMAIN_KEYS: DomainKey[] = ["uptime", "marketing", "coverage", "csat"];
+
+export type { DomainConfig, DomainKey, DataPoint, ThresholdAnnotation } from "./types";

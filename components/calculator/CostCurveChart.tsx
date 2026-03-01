@@ -1,148 +1,165 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ReferenceLine,
-  ReferenceArea,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+  Area, AreaChart, CartesianGrid, ReferenceLine, ReferenceArea,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import type { DataPoint } from "@/lib/models/types";
-import type { DomainConfig } from "@/lib/models";
+import type { DataPoint, DomainConfig } from "@/lib/models";
+import { COLORS, getZoneColor } from "@/lib/constants";
 import { formatCurrency } from "@/lib/format";
-import { COLORS } from "@/lib/constants";
-
-const CHART_HEIGHT = 400;
-const GRADIENT_ID = "cost-curve-gradient";
 
 interface CostCurveChartProps {
   data: DataPoint[];
   config: DomainConfig;
   sliderValue: number;
-  chartTitle: string;
 }
 
-function getZoneColor(nines: number, zones: { value: number; caution: number }): string {
-  if (nines < zones.value) return COLORS.blue;
-  if (nines < zones.caution) return COLORS.amber;
-  return COLORS.red;
-}
-
-export function CostCurveChart({
-  data,
-  config,
-  sliderValue,
-  chartTitle,
-}: CostCurveChartProps) {
-  const { zones, sliderConfig, yAxis } = config;
-  const refLineColor = getZoneColor(sliderValue, zones);
+function ChartTooltip({ active, payload, config }: {
+  active?: boolean;
+  payload?: Array<{ payload: DataPoint }>;
+  config: DomainConfig;
+}) {
+  if (!active || !payload?.length) return null;
+  const pt = payload[0].payload;
+  const marginal = config.marginalFn(pt.x);
 
   return (
-    <div className="relative min-h-[280px] w-full overflow-hidden bg-white lg:min-h-[400px]" style={{ height: CHART_HEIGHT }}>
-      <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-        <AreaChart
-          data={data}
-          margin={{ top: 24, right: 24, left: 8, bottom: 48 }}
-        >
+    <div
+      style={{
+        background: COLORS.white,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 8,
+        padding: "10px 14px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+      }}
+    >
+      <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>
+        {config.xFmt(pt.x)}
+      </div>
+      <div
+        style={{
+          fontSize: 13, color: COLORS.dark, marginTop: 2,
+          fontFamily: "var(--font-jetbrains), monospace",
+        }}
+      >
+        {formatCurrency(pt.cost)} / year
+      </div>
+      <div style={{ fontSize: 11, color: COLORS.med, marginTop: 2 }}>
+        Marginal: {formatCurrency(marginal)}
+      </div>
+    </div>
+  );
+}
+
+export function CostCurveChart({ data, config, sliderValue }: CostCurveChartProps) {
+  const { zones, slider: sliderConfig } = config;
+  const refColor = getZoneColor(sliderValue, zones);
+
+  return (
+    <div
+      className="relative w-full"
+      style={{
+        background: COLORS.white,
+        borderRadius: 16,
+        border: `1px solid ${COLORS.border}`,
+        padding: "24px 16px 16px 8px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      }}
+    >
+      {/* Internal chart title (screenshot-readiness) */}
+      <div className="absolute left-6 top-4 z-10">
+        <span style={{ fontSize: 15, fontWeight: 700, color: COLORS.navy }}>
+          {config.chartTitle}
+        </span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={420}>
+        <AreaChart data={data} margin={{ top: 40, right: 20, left: 12, bottom: 40 }}>
           <defs>
-            <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor={COLORS.blue} stopOpacity={0.3} />
-              <stop offset="50%" stopColor={COLORS.amber} stopOpacity={0.4} />
-              <stop offset="100%" stopColor={COLORS.red} stopOpacity={0.5} />
+            <linearGradient id="cost-gradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={COLORS.blue} stopOpacity={0.2} />
+              <stop offset="45%" stopColor={COLORS.amber} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={COLORS.red} stopOpacity={0.35} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke={COLORS.borderGray} vertical={false} />
+
+          <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF1" vertical={false} />
+
           <XAxis
             dataKey="x"
             type="number"
             domain={[sliderConfig.min, sliderConfig.max]}
-            ticks={config.key === "uptime" ? [2, 3, 4, 5, 6] : undefined}
-            tickFormatter={(v) => config.xAxis.format(v)}
-            tick={{ fontSize: 12, fill: COLORS.medGray }}
-            axisLine={{ stroke: COLORS.borderGray }}
+            ticks={config.ticks}
+            tickFormatter={config.xFmt}
+            tick={{ fontSize: 12, fill: COLORS.med }}
+            axisLine={{ stroke: COLORS.border }}
             tickLine={false}
-            label={{ value: config.xAxis.label, position: "insideBottom", offset: -8, fill: COLORS.medGray, fontSize: 12 }}
+            label={{
+              value: config.xLabel, position: "insideBottom", offset: -12,
+              fill: COLORS.med, fontSize: 12,
+            }}
           />
+
           <YAxis
-            type="number"
-            tickFormatter={(v) => yAxis.format(v)}
-            tick={{ fontSize: 12, fill: COLORS.medGray }}
+            tickFormatter={config.yFmt}
+            tick={{ fontSize: 12, fill: COLORS.med }}
             axisLine={false}
             tickLine={false}
-            width={48}
-            label={{ value: yAxis.label, angle: -90, position: "insideLeft", fill: COLORS.medGray, fontSize: 12 }}
+            width={56}
+            label={{
+              value: config.yLabel, angle: -90, position: "insideLeft", offset: 8,
+              fill: COLORS.med, fontSize: 12,
+            }}
+          />
+
+          {/* Zone shading (very subtle) */}
+          <ReferenceArea
+            x1={sliderConfig.min} x2={zones.value}
+            fill={COLORS.blue} fillOpacity={0.03}
           />
           <ReferenceArea
-            x1={sliderConfig.min}
-            x2={zones.value}
-            fill={COLORS.blue}
-            fillOpacity={0.04}
+            x1={zones.value} x2={zones.caution}
+            fill={COLORS.amber} fillOpacity={0.03}
           />
           <ReferenceArea
-            x1={zones.value}
-            x2={zones.caution}
-            fill={COLORS.amber}
-            fillOpacity={0.04}
+            x1={zones.caution} x2={sliderConfig.max}
+            fill={COLORS.red} fillOpacity={0.03}
           />
-          <ReferenceArea
-            x1={zones.caution}
-            x2={sliderConfig.max}
-            fill={COLORS.red}
-            fillOpacity={0.04}
-          />
+
           <Area
             type="monotone"
             dataKey="cost"
             stroke={COLORS.blue}
-            strokeWidth={2}
-            fill={`url(#${GRADIENT_ID})`}
+            strokeWidth={2.5}
+            fill="url(#cost-gradient)"
             isAnimationActive
-            animationDuration={300}
+            animationDuration={400}
             animationEasing="ease-out"
           />
+
           <ReferenceLine
             x={sliderValue}
-            stroke={refLineColor}
+            stroke={refColor}
             strokeWidth={2}
-            strokeDasharray="4 4"
+            strokeDasharray="6 4"
             label={{
               value: sliderConfig.format(sliderValue),
               position: "top",
-              fill: refLineColor,
+              fill: refColor,
               fontSize: 14,
               fontWeight: 700,
-              fontFamily: "var(--font-jetbrains-mono), monospace",
             }}
           />
+
           <Tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload?.length) return null;
-              const point = payload[0].payload as DataPoint;
-              const marginal = config.marginalCostFn(point.x);
-              return (
-                <div className="rounded-lg border border-[#D0D5DD] bg-white p-3 shadow-md">
-                  <div className="text-sm text-[#333333]">
-                    <span className="font-medium">{config.xAxis.format(point.x)}</span>
-                  </div>
-                  <div className="mt-1 font-mono text-sm text-[#1B2A4A]">
-                    {formatCurrency(point.cost)} / year
-                  </div>
-                  <div className="mt-0.5 text-xs text-[#555555]">
-                    Marginal: {formatCurrency(marginal)}
-                  </div>
-                </div>
-              );
-            }}
+            content={(props: any) => <ChartTooltip {...props} config={config} />}
           />
         </AreaChart>
       </ResponsiveContainer>
-      {/* Chart title only inside chart boundary; methodology lives below grid */}
-      <div className="pointer-events-none absolute left-0 top-0 max-w-[85%] p-4">
-        <h2 className="text-base font-bold leading-tight text-[#1B2A4A]">{chartTitle}</h2>
+
+      {/* Internal source attribution (screenshot-readiness) */}
+      <div className="absolute bottom-3 right-5 z-10">
+        <span style={{ fontSize: 11, color: COLORS.med }}>{config.source}</span>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export interface SliderConfig {
 
 export interface ThresholdAnnotation {
   trigger: number;
-  direction: "above" | "below";
+  dir: "above" | "below";
   icon: string;
   title: string;
   body: string;
@@ -19,24 +19,27 @@ export interface ThresholdAnnotation {
 export interface DomainConfig {
   key: DomainKey;
   label: string;
-  description: string;
-  sliderConfig: SliderConfig;
-  xAxis: { label: string; format: (v: number) => string };
-  yAxis: { label: string; format: (v: number) => string };
+  desc: string;
+  slider: SliderConfig;
+  xLabel: string;
+  yLabel: string;
+  xFmt: (v: number) => string;
+  yFmt: (v: number) => string;
   costFn: (x: number) => number;
-  /** When set, counter shows this instead of costFn (e.g. marketing: annual spend) */
-  displayCostFn?: (x: number) => number;
-  marginalCostFn: (x: number) => number;
+  displayFn: (x: number) => number;
+  marginalFn: (x: number) => number;
   secondaryFn: (x: number) => number;
   secondaryLabel: string;
-  secondaryFormat: (v: number) => string;
-  thresholds: ThresholdAnnotation[];
+  secondaryFmt: (v: number) => string;
+  chartTitle: string;
   source: string;
   zones: { value: number; caution: number };
+  ticks?: number[];
+  logScale?: boolean;
+  thresholds: ThresholdAnnotation[];
 }
 
 export interface DataPoint {
   x: number;
   cost: number;
-  label: string;
 }
