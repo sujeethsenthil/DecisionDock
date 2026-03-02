@@ -23,7 +23,7 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
     <div style={{ display: "flex", gap: g, alignItems: "stretch" }}>
       {/* What you'd need */}
       <div style={{ flex: "1 1 50%", background: C.white, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", padding: T.botPad, minHeight: T.botMinH, display: "flex", flexDirection: "column" }}>
-        <div style={{ fontSize: T.botLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>What you'd need at {fmtNinesExact(target)}</div>
+        <div style={{ fontSize: T.botLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>What you&apos;d need at {fmtNinesExact(target)}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
           <span style={{ fontSize: T.botTFs + 4 }}>{th.icon}</span>
           <span style={{ fontSize: T.botTFs, fontWeight: 700, color: C.navy }}>{th.t}</span>

@@ -32,7 +32,7 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
       {!isUpgrade ? (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ background: C.bS, borderRadius: 10, padding: T.upgPad, marginBottom: g }}>
-            <div style={{ fontSize: T.upgLFs, color: C.blue, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>You're here · {fmtNinesExact(current)}</div>
+            <div style={{ fontSize: T.upgLFs, color: C.blue, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>You&apos;re here · {fmtNinesExact(current)}</div>
             <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 4, fontWeight: 700, color: C.navy }}>{fc(bC)}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/yr</span></div>
             <div style={{ fontSize: T.upgLFs + 1, color: C.subtle, marginTop: 3 }}>{fmtDur(bD)} downtime per year</div>
           </div>
@@ -54,7 +54,7 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
           </div>
           <div style={{ marginBottom: g }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-              <span style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>How much more you'd pay</span>
+              <span style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>How much more you&apos;d pay</span>
               <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs - 2, fontWeight: 700, color }}>{(tC / bC).toFixed(0)}×</span>
             </div>
             <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: "hidden" }}>
@@ -68,7 +68,7 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
               <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>per year</div>
             </div>
             <div style={{ flex: 1, background: C.eS, borderRadius: 10, padding: T.upgPad, textAlign: "center" }}>
-              <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Downtime you'd eliminate</div>
+              <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Downtime you&apos;d eliminate</div>
               <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 2, fontWeight: 700, color: C.emerald }}>{fmtDur(dD)}</div>
               <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>per year</div>
             </div>
