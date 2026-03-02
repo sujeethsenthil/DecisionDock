@@ -1,65 +1,48 @@
-import type { DomainConfig } from "./types";
-import { formatCurrency, formatNines, formatDuration } from "../format";
+export const uptimeCost = (n: number): number => 5000 * Math.pow(10, n - 2);
+export const uptimeDown = (n: number): number => Math.pow(10, -n) * 525960;
 
-const BASE_COST = 5000;
+export const uptimeCurve = Array.from({ length: 201 }, (_, i) => {
+  const x = 2 + (i * 4) / 200;
+  return { x: Math.round(x * 1e3) / 1e3, cost: uptimeCost(x) };
+});
 
-export const uptimeCost = (n: number): number => BASE_COST * Math.pow(10, n - 2);
-export const uptimeDowntime = (n: number): number => Math.pow(10, -n) * 525960;
-export const uptimeMarginal = (n: number): number =>
-  (uptimeCost(n + 0.1) - uptimeCost(n)) / 0.1;
+export interface Threshold {
+  min: number;
+  max: number;
+  icon: string;
+  title: string;
+  what: string;
+  body: string;
+}
 
-export const uptimeConfig: DomainConfig = {
-  key: "uptime",
-  label: "Uptime",
-  desc: "Reliability diminishing returns",
-  framing: "Each nine of availability roughly 10× your total cost. Most teams overshoot by 1–2 nines.",
-  slider: { min: 2, max: 6, step: 0.1, default: 3, format: formatNines },
-  xLabel: "Availability Target",
-  yLabel: "Annual Cost (TCO)",
-  xFmt: formatNines,
-  yFmt: formatCurrency,
-  costFn: uptimeCost,
-  displayFn: uptimeCost,
-  marginalFn: uptimeMarginal,
-  secondaryFn: uptimeDowntime,
-  secondaryLabel: "Annual Downtime",
-  secondaryFmt: formatDuration,
-  decisionSummaryFn: (slider, config) => {
-    const defaultNines = config.slider.default;
-    if (slider <= defaultNines) {
-      return `At ${formatNines(slider)}, you spend ${formatCurrency(uptimeCost(slider))}/year with ${formatDuration(uptimeDowntime(slider))} of annual downtime. This is a cost-effective target for most services.`;
-    }
-    const currentCost = uptimeCost(defaultNines);
-    const targetCost = uptimeCost(slider);
-    const additionalCost = targetCost - currentCost;
-    const downtimeSaved = uptimeDowntime(defaultNines) - uptimeDowntime(slider);
-    const costPerMinute = downtimeSaved > 0 ? additionalCost / downtimeSaved : 0;
-    return `Moving from ${formatNines(defaultNines)} to ${formatNines(slider)} costs an additional ${formatCurrency(additionalCost)}/year to save ${formatDuration(downtimeSaved)} of downtime. That's ${formatCurrency(costPerMinute)} per minute of uptime gained.`;
+export const THRESHOLDS: Threshold[] = [
+  {
+    min: 2, max: 2.99, icon: "✅", title: "Standard tier",
+    what: "Basic cloud instance + monitoring",
+    body: "Single-AZ deployment with basic monitoring. No dedicated reliability staff needed.",
   },
-  chartTitle: "Annual Cost of Uptime Targets",
-  source: "Sources: Google SRE Book, AWS pricing, SRE compensation benchmarks",
-  zones: { value: 3, caution: 4 },
-  ticks: [2, 3, 4, 5, 6],
-  thresholds: [
-    {
-      trigger: 3, dir: "above", icon: "⚡",
-      title: "The 10× threshold",
-      body: "Each additional nine multiplies total cost by ~10×. Going from 3→4 nines: $50K → $500K/year.",
-    },
-    {
-      trigger: 3.5, dir: "above", icon: "👥",
-      title: "Dedicated SRE team required",
-      body: "Beyond 99.95%, you need 4–8 dedicated SREs. Google's minimum on-call team is 8 engineers across two time zones.",
-    },
-    {
-      trigger: 4, dir: "above", icon: "🌍",
-      title: "Multi-region infrastructure",
-      body: "99.99% demands multi-region active-active deployment. This roughly doubles your entire cloud bill.",
-    },
-    {
-      trigger: 5, dir: "above", icon: "🚨",
-      title: "Google-scale investment",
-      body: "99.999% requires 12–20+ SREs, formal verification, and >90% of dev time spent on testing.",
-    },
-  ],
-};
+  {
+    min: 3, max: 3.49, icon: "⚡", title: "10× cost threshold",
+    what: "Load balancer + multi-AZ + 1–2 DevOps engineers",
+    body: "Each additional nine from here multiplies total cost by roughly 10×.",
+  },
+  {
+    min: 3.5, max: 3.99, icon: "👥", title: "Dedicated SRE team",
+    what: "Full observability stack + dedicated SRE team (4–8 engineers)",
+    body: "Google's minimum sustainable on-call team is 8 SREs across two time zones.",
+  },
+  {
+    min: 4, max: 4.99, icon: "🌍", title: "Multi-region required",
+    what: "Multi-region active-active infra + 8–12 SREs + canary deploys",
+    body: "Requires duplicating your full stack across 2+ regions. Roughly doubles your cloud bill.",
+  },
+  {
+    min: 5, max: 6, icon: "🚨", title: "Google-scale investment",
+    what: "Fault-tolerant hardware + 20–50 SREs + 24/7 NOC",
+    body: "Formal verification, >90% of dev time on testing. Only Google-critical services justify this.",
+  },
+];
+
+export function getThreshold(n: number): Threshold {
+  return THRESHOLDS.find((t) => n >= t.min && n <= t.max) || THRESHOLDS[0];
+}

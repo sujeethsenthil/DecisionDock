@@ -16,21 +16,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Nines Calculator — What does the next nine actually cost?",
+  title: "The Nines Calculator — Should you invest in the next nine?",
   description:
-    "Visualize the exponential cost of incremental perfection. See how each additional nine of uptime, each dollar of ad spend, and each point of CSAT hits diminishing returns.",
+    "Each nine of uptime multiplies your total cost by 10×. Visualize the ROI of your next reliability investment.",
   openGraph: {
-    title: "The Nines Calculator",
-    description: "What does the next nine actually cost?",
+    title: "The Nines Calculator — DecisionDock",
+    description: "Should you invest in the next nine? Each nine of uptime ≈ 10× your total cost.",
     type: "website",
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body>{children}</body>

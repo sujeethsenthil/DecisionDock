@@ -1,46 +1,31 @@
-export const COLORS = {
+export const C = {
   blue: "#3B82F6",
-  emerald: "#22C55E",
+  emerald: "#10B981",
   amber: "#F59E0B",
   red: "#EF4444",
-  navy: "#1B2A4A",
-  dark: "#333333",
+  navy: "#0F172A",
+  dark: "#1E293B",
+  body: "#334155",
   med: "#64748B",
+  subtle: "#94A3B8",
   light: "#F8FAFC",
   border: "#E2E8F0",
   white: "#FFFFFF",
-  pageBg: "#F1F5F9",
+  pageBg: "#F0F4F8",
+  blueSurface: "rgba(59,130,246,0.06)",
+  amberSurface: "rgba(245,158,11,0.06)",
+  redSurface: "rgba(239,68,68,0.06)",
+  emeraldSurface: "rgba(16,185,129,0.06)",
 } as const;
 
-export const SPRING_CONFIG = {
-  stiffness: 120,
-  damping: 20,
-  mass: 0.8,
-} as const;
-
-export function getZoneColor(
-  value: number,
-  zones: { value: number; caution: number }
-): string {
-  if (value <= zones.value) return COLORS.blue;
-  if (value <= zones.caution) return COLORS.amber;
-  return COLORS.red;
+export function zoneColor(n: number): string {
+  return n <= 3 ? C.blue : n <= 4 ? C.amber : C.red;
 }
 
-export function getZoneBg(
-  value: number,
-  zones: { value: number; caution: number }
-): string {
-  if (value <= zones.value) return "rgba(59,130,246,0.08)";
-  if (value <= zones.caution) return "rgba(245,158,11,0.08)";
-  return "rgba(239,68,68,0.08)";
+export function zoneSurface(n: number): string {
+  return n <= 3 ? C.blueSurface : n <= 4 ? C.amberSurface : C.redSurface;
 }
 
-export function getZoneLabel(
-  value: number,
-  zones: { value: number; caution: number }
-): string {
-  if (value <= zones.value) return "Value zone";
-  if (value <= zones.caution) return "Diminishing returns";
-  return "Overspend zone";
+export function zoneLabel(n: number): string {
+  return n <= 3 ? "Cost-effective" : n <= 4 ? "Diminishing returns" : "Extreme cost";
 }

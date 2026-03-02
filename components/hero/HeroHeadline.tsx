@@ -1,22 +1,13 @@
-import { COLORS } from "@/lib/constants";
+import { C } from "@/lib/constants";
 
 export function HeroHeadline() {
   return (
-    <div style={{ textAlign: "center", marginBottom: 48 }}>
-      <h1
-        style={{
-          fontSize: 42,
-          fontWeight: 700,
-          color: COLORS.navy,
-          letterSpacing: "-0.025em",
-          lineHeight: 1.15,
-          marginBottom: 8,
-        }}
-      >
-        What does the next nine actually cost?
+    <div style={{ textAlign: "center", marginBottom: 24 }}>
+      <h1 style={{ fontSize: 36, fontWeight: 800, color: C.navy, letterSpacing: "-0.035em", lineHeight: 1.1, margin: 0 }}>
+        Should you invest in the next nine?
       </h1>
-      <p style={{ color: COLORS.med, fontSize: 16 }}>
-        Drag the slider. Watch the cost explode.
+      <p style={{ color: C.med, fontSize: 15, marginTop: 8, lineHeight: 1.4 }}>
+        Each nine of uptime ≈ 10× your total cost. Drag the slider to find out if it's worth it.
       </p>
     </div>
   );
