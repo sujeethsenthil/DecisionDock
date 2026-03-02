@@ -28,15 +28,15 @@ export function fmtNinesExact(ni: number): string {
   return parseFloat(p.toFixed(d)) + "%";
 }
 
-export function fmtDur(min: number): string {
-  if (min < 1) return `${(min * 60).toFixed(1)}s`;
-  if (min < 60) return `${min.toFixed(1)} min`;
-  if (min < 1440) {
-    const h = Math.floor(min / 60);
-    const m = Math.round(min % 60);
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+export function fmtDur(m: number): string {
+  if (m < 1) return `${(m * 60).toFixed(1)}s`;
+  if (m < 60) return `${m.toFixed(1)} min`;
+  if (m < 1440) {
+    const h = Math.floor(m / 60);
+    const mn = Math.round(m % 60);
+    return mn > 0 ? `${h}h ${mn}m` : `${h}h`;
   }
-  const d = Math.floor(min / 1440);
-  const h = Math.round((min % 1440) / 60);
+  const d = Math.floor(m / 1440);
+  const h = Math.round((m % 1440) / 60);
   return h > 0 ? `${d}d ${h}h` : `${d}d`;
 }

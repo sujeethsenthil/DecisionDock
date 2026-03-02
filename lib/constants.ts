@@ -12,20 +12,18 @@ export const C = {
   border: "#E2E8F0",
   white: "#FFFFFF",
   pageBg: "#F0F4F8",
-  blueSurface: "rgba(59,130,246,0.06)",
-  amberSurface: "rgba(245,158,11,0.06)",
-  redSurface: "rgba(239,68,68,0.06)",
-  emeraldSurface: "rgba(16,185,129,0.06)",
+  bS: "rgba(59,130,246,0.06)",
+  aS: "rgba(245,158,11,0.06)",
+  rS: "rgba(239,68,68,0.06)",
+  eS: "rgba(16,185,129,0.06)",
 } as const;
 
 export function zoneColor(n: number): string {
   return n <= 3 ? C.blue : n <= 4 ? C.amber : C.red;
 }
-
 export function zoneSurface(n: number): string {
-  return n <= 3 ? C.blueSurface : n <= 4 ? C.amberSurface : C.redSurface;
+  return n <= 3 ? C.bS : n <= 4 ? C.aS : C.rS;
 }
-
 export function zoneLabel(n: number): string {
   return n <= 3 ? "Cost-effective" : n <= 4 ? "Diminishing returns" : "Extreme cost";
 }

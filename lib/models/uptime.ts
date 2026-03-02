@@ -10,37 +10,19 @@ export interface Threshold {
   min: number;
   max: number;
   icon: string;
-  title: string;
-  what: string;
-  body: string;
+  t: string;
+  infra: string;
+  team: string;
+  staffing: string;
+  b: string;
 }
 
 export const THRESHOLDS: Threshold[] = [
-  {
-    min: 2, max: 2.99, icon: "✅", title: "Standard tier",
-    what: "Basic cloud instance + monitoring",
-    body: "Single-AZ deployment with basic monitoring. No dedicated reliability staff needed.",
-  },
-  {
-    min: 3, max: 3.49, icon: "⚡", title: "10× cost threshold",
-    what: "Load balancer + multi-AZ + 1–2 DevOps engineers",
-    body: "Each additional nine from here multiplies total cost by roughly 10×.",
-  },
-  {
-    min: 3.5, max: 3.99, icon: "👥", title: "Dedicated SRE team",
-    what: "Full observability stack + dedicated SRE team (4–8 engineers)",
-    body: "Google's minimum sustainable on-call team is 8 SREs across two time zones.",
-  },
-  {
-    min: 4, max: 4.99, icon: "🌍", title: "Multi-region required",
-    what: "Multi-region active-active infra + 8–12 SREs + canary deploys",
-    body: "Requires duplicating your full stack across 2+ regions. Roughly doubles your cloud bill.",
-  },
-  {
-    min: 5, max: 6, icon: "🚨", title: "Google-scale investment",
-    what: "Fault-tolerant hardware + 20–50 SREs + 24/7 NOC",
-    body: "Formal verification, >90% of dev time on testing. Only Google-critical services justify this.",
-  },
+  { min: 2, max: 2.99, icon: "✅", t: "Standard tier", infra: "Single-AZ cloud instance + basic monitoring", team: "No dedicated reliability staff", staffing: "Included in existing DevOps budget", b: "Sufficient for internal tools and low-traffic services." },
+  { min: 3, max: 3.49, icon: "⚡", t: "10× cost threshold", infra: "Load balancer + multi-AZ deployment", team: "1–2 DevOps engineers (partial allocation)", staffing: "~$150K–$400K staffing", b: "Each additional nine from here multiplies total cost by ~10×." },
+  { min: 3.5, max: 3.99, icon: "👥", t: "Dedicated SRE team", infra: "Full observability stack + automated failover", team: "4–8 dedicated SREs", staffing: "~$944K–$1.9M staffing (×$236K avg)", b: "Google's minimum on-call is 8 SREs across two time zones." },
+  { min: 4, max: 4.99, icon: "🌍", t: "Multi-region required", infra: "Multi-region active-active + canary deploys", team: "8–12 SREs + incident management", staffing: "~$1.9M–$2.8M staffing", b: "Duplicating full stack across 2+ regions. ~Doubles cloud bill." },
+  { min: 5, max: 6, icon: "🚨", t: "Google-scale", infra: "Fault-tolerant hardware + formal verification", team: "20–50 SREs + 24/7 NOC", staffing: "~$4.7M–$11.8M staffing", b: ">90% of dev time on testing. Only Google-critical services justify this." },
 ];
 
 export function getThreshold(n: number): Threshold {
