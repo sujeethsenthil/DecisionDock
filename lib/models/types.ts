@@ -20,6 +20,7 @@ export interface DomainConfig {
   key: DomainKey;
   label: string;
   desc: string;
+  framing: string;
   slider: SliderConfig;
   xLabel: string;
   yLabel: string;
@@ -31,6 +32,7 @@ export interface DomainConfig {
   secondaryFn: (x: number) => number;
   secondaryLabel: string;
   secondaryFmt: (v: number) => string;
+  decisionSummaryFn: (sliderValue: number, config: DomainConfig) => string;
   chartTitle: string;
   source: string;
   zones: { value: number; caution: number };

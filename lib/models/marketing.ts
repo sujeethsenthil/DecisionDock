@@ -23,6 +23,7 @@ export const marketingConfig: DomainConfig = {
   key: "marketing",
   label: "Marketing",
   desc: "Ad spend saturation curve",
+  framing: "Your average CPA hides the real story. Your last dollar costs 5–8× more than your first.",
   slider: {
     min: 5000, max: 500000, step: 5000, default: 25000,
     format: (v) => formatCurrencyShort(v) + "/mo",
@@ -37,6 +38,15 @@ export const marketingConfig: DomainConfig = {
   secondaryFn: mktCPA,
   secondaryLabel: "Average CPA",
   secondaryFmt: formatCurrency,
+  decisionSummaryFn: (slider) => {
+    const avgCPA = mktCPA(slider);
+    const margCPA = mktMarginalCPA(slider);
+    const ratio = margCPA > 0 && avgCPA > 0 ? (margCPA / avgCPA) : 0;
+    if (ratio <= 1.5) {
+      return `At ${formatCurrencyShort(slider)}/mo, your marginal CPA (${formatCurrency(margCPA)}) is close to your average (${formatCurrency(avgCPA)}). You have room to scale.`;
+    }
+    return `At ${formatCurrencyShort(slider)}/mo, your marginal CPA (${formatCurrency(margCPA)}) is ${ratio.toFixed(1)}× your average (${formatCurrency(avgCPA)}). Every dollar above this point costs ${ratio.toFixed(1)}× more than your average suggests.`;
+  },
   chartTitle: "Cost per Acquisition vs. Ad Spend",
   source: "Sources: WordStream CPA benchmarks, Meta Robyn, Saxifrage Blog",
   zones: { value: 25000, caution: 100000 },

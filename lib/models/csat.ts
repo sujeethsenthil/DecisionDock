@@ -14,6 +14,7 @@ export const csatConfig: DomainConfig = {
   key: "csat",
   label: "CSAT",
   desc: "Customer satisfaction cost curve",
+  framing: "Failing customers costs 2× more than delighting them. But delight hits diminishing returns fast.",
   slider: {
     min: 50, max: 99, step: 0.5, default: 77,
     format: (v) => `${v.toFixed(1)}%`,
@@ -28,6 +29,16 @@ export const csatConfig: DomainConfig = {
   secondaryFn: csatRetention,
   secondaryLabel: "Retention Impact",
   secondaryFmt: formatPercentage,
+  decisionSummaryFn: (slider) => {
+    const costPerPoint = csatPerPoint(slider);
+    const costPerPointAtBaseline = csatPerPoint(77);
+    const multiplier = costPerPoint / costPerPointAtBaseline;
+
+    if (slider <= 80) {
+      return `At ${slider.toFixed(1)}% CSAT, each additional point costs ${formatCurrency(costPerPoint)}. You're near the national average — basic improvements here have the highest ROI.`;
+    }
+    return `At ${slider.toFixed(1)}% CSAT, each additional point costs ${formatCurrency(costPerPoint)} — that's ${multiplier.toFixed(1)}× more than at the national average. Is the retention gain worth ${formatCurrency(costPerPoint)} per point?`;
+  },
   chartTitle: "Annual Support Cost vs. CSAT Score",
   source: "Sources: ACSI national average (76.9), Bain & Company retention research",
   zones: { value: 77, caution: 90 },

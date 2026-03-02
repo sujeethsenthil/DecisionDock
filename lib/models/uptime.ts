@@ -8,17 +8,11 @@ export const uptimeDowntime = (n: number): number => Math.pow(10, -n) * 525960;
 export const uptimeMarginal = (n: number): number =>
   (uptimeCost(n + 0.1) - uptimeCost(n)) / 0.1;
 
-// Anchor validation (total cost of ownership):
-// uptimeCost(2) =   $5,000    (single AZ, basic monitoring)
-// uptimeCost(3) =  $50,000    (multi-AZ, 1-2 DevOps)
-// uptimeCost(4) = $500,000    (SRE team 4-8)
-// uptimeCost(5) = $5,000,000  (multi-region, 12-20 SREs)
-// uptimeCost(6) = $50,000,000 (fault-tolerant, 20-50+ SREs)
-
 export const uptimeConfig: DomainConfig = {
   key: "uptime",
   label: "Uptime",
   desc: "Reliability diminishing returns",
+  framing: "Each nine of availability roughly 10× your total cost. Most teams overshoot by 1–2 nines.",
   slider: { min: 2, max: 6, step: 0.1, default: 3, format: formatNines },
   xLabel: "Availability Target",
   yLabel: "Annual Cost (TCO)",
@@ -30,6 +24,18 @@ export const uptimeConfig: DomainConfig = {
   secondaryFn: uptimeDowntime,
   secondaryLabel: "Annual Downtime",
   secondaryFmt: formatDuration,
+  decisionSummaryFn: (slider, config) => {
+    const defaultNines = config.slider.default;
+    if (slider <= defaultNines) {
+      return `At ${formatNines(slider)}, you spend ${formatCurrency(uptimeCost(slider))}/year with ${formatDuration(uptimeDowntime(slider))} of annual downtime. This is a cost-effective target for most services.`;
+    }
+    const currentCost = uptimeCost(defaultNines);
+    const targetCost = uptimeCost(slider);
+    const additionalCost = targetCost - currentCost;
+    const downtimeSaved = uptimeDowntime(defaultNines) - uptimeDowntime(slider);
+    const costPerMinute = downtimeSaved > 0 ? additionalCost / downtimeSaved : 0;
+    return `Moving from ${formatNines(defaultNines)} to ${formatNines(slider)} costs an additional ${formatCurrency(additionalCost)}/year to save ${formatDuration(downtimeSaved)} of downtime. That's ${formatCurrency(costPerMinute)} per minute of uptime gained.`;
+  },
   chartTitle: "Annual Cost of Uptime Targets",
   source: "Sources: Google SRE Book, AWS pricing, SRE compensation benchmarks",
   zones: { value: 3, caution: 4 },

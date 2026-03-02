@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { DOMAINS } from "@/lib/models";
 import type { DomainKey } from "@/lib/models";
 import { generateCurveData } from "@/lib/engine";
-import { formatCurrency } from "@/lib/format";
+import { COLORS } from "@/lib/constants";
 import { CostCurveChart } from "./CostCurveChart";
 import { ResultsPanel } from "./ResultsPanel";
 import { DomainTabs } from "./DomainTabs";
@@ -49,10 +49,32 @@ export function Calculator() {
     [config, slider]
   );
 
+  const decisionSummary = useMemo(
+    () => config.decisionSummaryFn(slider, config),
+    [config, slider]
+  );
+
   return (
     <div>
       {/* Tabs */}
       <DomainTabs activeDomain={domain} onDomainChange={handleDomainChange} />
+
+      {/* Problem framing — answers "why does this matter to me?" */}
+      <p
+        style={{
+          textAlign: "center",
+          color: COLORS.med,
+          fontSize: 15,
+          marginTop: 16,
+          marginBottom: 32,
+          maxWidth: 600,
+          marginLeft: "auto",
+          marginRight: "auto",
+          lineHeight: 1.5,
+        }}
+      >
+        {config.framing}
+      </p>
 
       {/* Two-column layout: chart left, results right */}
       <div
@@ -61,7 +83,6 @@ export function Calculator() {
           gap: 32,
           alignItems: "flex-start",
           flexWrap: "wrap",
-          marginTop: 32,
         }}
       >
         {/* LEFT: Chart (62%) */}
@@ -82,6 +103,7 @@ export function Calculator() {
             displayCost={displayCost}
             secondaryValue={config.secondaryFmt(secondary)}
             marginalCost={marginalCost}
+            decisionSummary={decisionSummary}
           />
         </div>
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import type { DomainConfig } from "@/lib/models";
 import { COLORS, getZoneColor, getZoneBg, getZoneLabel } from "@/lib/constants";
 import { formatCurrency } from "@/lib/format";
@@ -14,6 +13,7 @@ interface ResultsPanelProps {
   displayCost: number;
   secondaryValue: string;
   marginalCost: number;
+  decisionSummary: string;
 }
 
 export function ResultsPanel({
@@ -23,6 +23,7 @@ export function ResultsPanel({
   displayCost,
   secondaryValue,
   marginalCost,
+  decisionSummary,
 }: ResultsPanelProps) {
   const { slider: sc, zones } = config;
   const isLog = config.logScale;
@@ -145,6 +146,31 @@ export function ResultsPanel({
           }}
         >
           {formatCurrency(marginalCost)}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: COLORS.border }} />
+
+      {/* Decision summary — the "so what?" answer */}
+      <div
+        style={{
+          background: COLORS.light,
+          borderRadius: 10,
+          padding: "14px 16px",
+          borderLeft: `3px solid ${zc}`,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+            letterSpacing: "0.06em", color: zc, marginBottom: 6,
+          }}
+        >
+          The bottom line
+        </div>
+        <div style={{ fontSize: 13, color: COLORS.dark, lineHeight: 1.55 }}>
+          {decisionSummary}
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ export const coverageConfig: DomainConfig = {
   key: "coverage",
   label: "Coverage",
   desc: "Test coverage effort curve",
+  framing: "The last 10% of coverage costs more than the first 60%. Most of it covers code that rarely breaks.",
   slider: { min: 30, max: 100, step: 1, default: 75, format: (v) => `${v}%` },
   xLabel: "Test Coverage",
   yLabel: "Cumulative Effort (eng-months)",
@@ -28,6 +29,19 @@ export const coverageConfig: DomainConfig = {
   secondaryFn: coverageBugRate,
   secondaryLabel: "Bug Detection Rate",
   secondaryFmt: formatPercentage,
+  decisionSummaryFn: (slider) => {
+    const effortAt75 = coverageEffort(75);
+    const effortAtSlider = coverageEffort(slider);
+    const marginal = coverageMarginal(slider);
+    const marginalAt30 = coverageMarginal(30);
+    const multiplier = marginal / marginalAt30;
+
+    if (slider <= 75) {
+      return `At ${slider}% coverage, you're in Google's "commendable" range. Each additional point costs ${multiplier.toFixed(1)}× the effort of early coverage — still a good investment.`;
+    }
+    const additionalEffort = effortAtSlider - effortAt75;
+    return `Going from 75% to ${slider}% costs ${Math.round(additionalEffort)} additional engineering-months. Each point now requires ${multiplier.toFixed(0)}× the effort of your first 30%. Is the bug detection gain worth it?`;
+  },
   chartTitle: "Engineering Effort vs. Test Coverage",
   source: "Sources: Google Testing Blog, Kochhar et al. 2015, Bach et al. 2017",
   zones: { value: 60, caution: 90 },
