@@ -9,7 +9,16 @@ import { SliderPanel } from "./SliderPanel";
 import { UpgradeCost } from "./UpgradeCost";
 import { BottomTiles } from "./BottomTiles";
 
-export function Calculator() {
+interface Props {
+  onChartClick?: () => void;
+  onSliderDrag?: () => void;
+  chartRef?: React.RefObject<HTMLDivElement>;
+  sliderRef?: React.RefObject<HTMLDivElement>;
+  upgradeRef?: React.RefObject<HTMLDivElement>;
+  bottomRef?: React.RefObject<HTMLDivElement>;
+}
+
+export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, upgradeRef, bottomRef }: Props) {
   const [current, setCurrent] = useState(2);
   const [target, setTarget] = useState(3);
   const { h } = useViewport();
@@ -19,7 +28,13 @@ export function Calculator() {
     const clamped = Math.round(Math.max(2, Math.min(5.9, nines)) * 10) / 10;
     setCurrent(clamped);
     setTarget((t) => Math.max(t, clamped));
-  }, []);
+    onChartClick?.();
+  }, [onChartClick]);
+
+  const handleSliderChange = useCallback((v: number) => {
+    setTarget(v);
+    onSliderDrag?.();
+  }, [onSliderDrag]);
 
   const isUpgrade = target > current + 0.05;
   const g = T.gap;
@@ -42,16 +57,25 @@ export function Calculator() {
 
       {/* Main grid */}
       <div style={{ display: "flex", gap: g, alignItems: "stretch" }}>
-        {/* Left column: chart + bottom tiles */}
+        {/* Left column */}
         <div style={{ flex: "1 1 68%", minWidth: 420, display: "flex", flexDirection: "column", gap: g }}>
-          <CostCurveChart data={uptimeCurve} current={current} target={target} isUpgrade={isUpgrade} onSetCurrent={handleSetCurrent} tokens={T} />
-          <BottomTiles current={current} target={target} isUpgrade={isUpgrade} tokens={T} />
+          {/* Chart — ref wrapper matches chart's flex behavior */}
+          <div ref={chartRef} style={{ display: "flex", flexDirection: "column", flex: "1 1 auto" }}>
+            <CostCurveChart data={uptimeCurve} current={current} target={target} isUpgrade={isUpgrade} onSetCurrent={handleSetCurrent} tokens={T} />
+          </div>
+          <div ref={bottomRef}>
+            <BottomTiles current={current} target={target} isUpgrade={isUpgrade} tokens={T} />
+          </div>
         </div>
 
-        {/* Right column: slider + upgrade cost */}
+        {/* Right column */}
         <div style={{ flex: "1 1 28%", minWidth: 240, display: "flex", flexDirection: "column", gap: g }}>
-          <SliderPanel current={current} target={target} onTargetChange={setTarget} tokens={T} />
-          <UpgradeCost current={current} target={target} isUpgrade={isUpgrade} tokens={T} />
+          <div ref={sliderRef}>
+            <SliderPanel current={current} target={target} onTargetChange={handleSliderChange} tokens={T} />
+          </div>
+          <div ref={upgradeRef} style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+            <UpgradeCost current={current} target={target} isUpgrade={isUpgrade} tokens={T} />
+          </div>
         </div>
       </div>
     </div>
