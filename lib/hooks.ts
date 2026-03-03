@@ -35,7 +35,7 @@ export function useTokens(h: number) {
       pad: "28px 44px 16px",
       hero: 34, sub: 15, heroMb: 18,
       tabPad: "7px 20px", tabFs: 13, tabMb: 16,
-      gap: 14, chartMinH: 340, botMinH: 145,
+      gap: 14, chartMinH: 370, botMinH: 145,
       chartTFs: 14, chartSFs: 12, srcFs: 9,
       chartMarginL: 66, chartMarginR: 28,
       rPad: "20px 24px", rNumFs: 32, rLabelFs: 10,

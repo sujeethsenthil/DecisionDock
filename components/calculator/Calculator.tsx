@@ -41,7 +41,7 @@ export function Calculator() {
       </div>
 
       {/* Main grid */}
-      <div style={{ display: "flex", gap: g }}>
+      <div style={{ display: "flex", gap: g, alignItems: "stretch" }}>
         {/* Left column: chart + bottom tiles */}
         <div style={{ flex: "1 1 68%", minWidth: 420, display: "flex", flexDirection: "column", gap: g }}>
           <CostCurveChart data={uptimeCurve} current={current} target={target} isUpgrade={isUpgrade} onSetCurrent={handleSetCurrent} tokens={T} />

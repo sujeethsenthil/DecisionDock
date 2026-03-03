@@ -1,6 +1,5 @@
 import { HeroHeadline } from "@/components/hero/HeroHeadline";
 import { Calculator } from "@/components/calculator/Calculator";
-import { SiteFooter } from "@/components/footer/SiteFooter";
 
 export default function Home() {
   return (
@@ -8,7 +7,6 @@ export default function Home() {
       <div style={{ maxWidth: 1320, margin: "0 auto", padding: "30px 48px 16px" }}>
         <HeroHeadline />
         <Calculator />
-        <SiteFooter />
       </div>
     </main>
   );
