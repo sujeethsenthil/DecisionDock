@@ -2,7 +2,7 @@
 
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
 import { fc, fmtMs, fmtLatencyExact } from "@/lib/format";
-import { latencyCost, latencyMs } from "@/lib/models/latency";
+import { latencyCost, latencyMs, conversionLiftPer100ms, breakEvenMonthlyRevenue } from "@/lib/models/latency";
 import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
 interface Props {
@@ -20,7 +20,9 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
   const bMs = latencyMs(current);
   const tMs = latencyMs(target);
   const dMs = bMs - tMs;
-  const cpms = dMs > 0 ? dC / dMs : 0;
+  const liftRate = conversionLiftPer100ms(bMs);
+  const totalLift = liftRate * (dMs / 100);
+  const breakeven = breakEvenMonthlyRevenue(dC, dMs, bMs);
   const g = T.gap;
   const nextLevel = Math.min(6, Math.ceil(current + 0.01));
   const nextCost = latencyCost(nextLevel);
@@ -68,14 +70,14 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
               <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>per year</div>
             </div>
             <div style={{ flex: 1, background: C.eS, borderRadius: 10, padding: T.upgPad, textAlign: "center" }}>
-              <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Response time you&apos;d save</div>
-              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 2, fontWeight: 700, color: C.emerald }}>{fmtMs(dMs)}</div>
-              <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>faster p99</div>
+              <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Estimated conversion lift</div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 2, fontWeight: 700, color: C.emerald }}>~{totalLift >= 1 ? totalLift.toFixed(1) : totalLift.toFixed(2)}%</div>
+              <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>from {fmtMs(dMs)} faster</div>
             </div>
           </div>
           <div style={{ background: C.light, borderRadius: 10, padding: "12px 14px", textAlign: "center", borderLeft: `3px solid ${color}` }}>
-            <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>What each millisecond costs you</div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgPpmFs + 2, fontWeight: 700, color }}>{fc(cpms)}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/ms</span></div>
+            <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Revenue to break even</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgPpmFs + 2, fontWeight: 700, color }}>{isFinite(breakeven) ? fc(breakeven) : "N/A"}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/mo</span></div>
           </div>
         </div>
       )}

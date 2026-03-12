@@ -102,7 +102,7 @@ export function CostCurveChart({ data, current, target, isUpgrade, onSetCurrent,
         )}
       </div>
       <div style={{ padding: `5px ${T.gap + 6}px 6px`, borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
-        <span style={{ fontSize: T.srcFs, color: C.subtle }}>Click the chart to set where you are today · Sources: Google Research, Akamai</span>
+        <span style={{ fontSize: T.srcFs, color: C.subtle }}>Click the chart to set where you are today · Sources: Deloitte/Google 2020, Akamai 2017</span>
         <span style={{ fontSize: T.srcFs, color: C.subtle }}>Each halving costs ~3–5× more</span>
       </div>
     </div>

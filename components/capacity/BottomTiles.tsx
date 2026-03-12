@@ -1,8 +1,8 @@
 "use client";
 
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
-import { fc, fmtBuffer, fmtSlowdown, fmtCapacityExact } from "@/lib/format";
-import { capacityCost, bufferMultiplier, peakSlowdown, getThreshold } from "@/lib/models/capacity";
+import { fc, fmtBuffer, fmtCapacityExact } from "@/lib/format";
+import { capacityCost, bufferMultiplier, peakSlowdown, getThreshold, incidentsPerYear, breakEvenIncidentCost } from "@/lib/models/capacity";
 
 interface Props {
   current: number;
@@ -18,8 +18,10 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
   const bSlow = peakSlowdown(current);
   const tSlow = peakSlowdown(target);
   const dSlow = bSlow - tSlow;
-  const cpsx = dSlow > 0 ? dC / dSlow : 0;
-  const peakHrThreshold = dSlow > 0 ? dC / (dSlow * 2000) : 0; // ~2000 peak hours/yr
+  const bIncidents = incidentsPerYear(bSlow);
+  const tIncidents = incidentsPerYear(tSlow);
+  const avoided = bIncidents - tIncidents;
+  const breakeven = breakEvenIncidentCost(dC, bSlow, tSlow);
   const g = T.gap;
 
   return (
@@ -54,13 +56,13 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
         <div style={{ fontSize: T.botBFs, color: C.body, lineHeight: 1.55, flex: 1 }}>
           {!isUpgrade
             ? `At ${fmtBuffer(bufferMultiplier(target))} buffer, you're running lean. Acceptable if traffic is predictable and spikes are rare.`
-            : target <= current + 2
-              ? `Adding headroom to ${fmtBuffer(bufferMultiplier(target))} costs +${fc(dC)}/yr and reduces peak slowdown by ${fmtSlowdown(dSlow)}. Worth it if peak-hour revenue exceeds ${fc(peakHrThreshold)}/hr.`
-              : `Reaching ${fmtBuffer(bufferMultiplier(target))} from ${fmtBuffer(bufferMultiplier(current))} requires +${fc(dC)}/yr. Peak slowdown drops from ${fmtSlowdown(bSlow)} to ${fmtSlowdown(tSlow)}. Only for services where peak performance is revenue-critical.`}
+            : avoided >= 10
+              ? `Adding headroom to ${fmtBuffer(bufferMultiplier(target))} costs +${fc(dC)}/yr and prevents ~${Math.round(avoided)} degradation events/yr. Worth it if each event costs >${fc(breakeven)}.`
+              : `Reaching ${fmtBuffer(bufferMultiplier(target))} from ${fmtBuffer(bufferMultiplier(current))} requires +${fc(dC)}/yr. Prevents ~${avoided.toFixed(1)} more incidents/yr. Only if each peak event costs >${fc(breakeven)}.`}
         </div>
-        {isUpgrade && cpsx > 0 && (
+        {isUpgrade && avoided > 0 && isFinite(breakeven) && (
           <div style={{ marginTop: 6, padding: T.roiPad, background: zoneSurface(target), borderRadius: 8, fontSize: T.roiFs, color: C.dark, lineHeight: 1.5 }}>
-            <strong>Quick math:</strong> If peak-hour revenue exceeds <strong style={{ color }}>{fc(peakHrThreshold)}/hr</strong>, this headroom pays for itself.
+            <strong>Quick math:</strong> If each peak degradation event costs your team more than <strong style={{ color }}>{fc(breakeven)}</strong>, this buffer pays for itself.
           </div>
         )}
       </div>

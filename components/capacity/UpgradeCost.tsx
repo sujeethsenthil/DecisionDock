@@ -2,7 +2,7 @@
 
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
 import { fc, fmtBuffer, fmtSlowdown, fmtCapacityExact } from "@/lib/format";
-import { capacityCost, bufferMultiplier, peakSlowdown } from "@/lib/models/capacity";
+import { capacityCost, bufferMultiplier, peakSlowdown, incidentsPerYear, breakEvenIncidentCost } from "@/lib/models/capacity";
 import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
 interface Props {
@@ -20,7 +20,10 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
   const bSlow = peakSlowdown(current);
   const tSlow = peakSlowdown(target);
   const dSlow = bSlow - tSlow;
-  const cpsx = dSlow > 0 ? dC / dSlow : 0; // cost per slowdown-× eliminated
+  const bIncidents = incidentsPerYear(bSlow);
+  const tIncidents = incidentsPerYear(tSlow);
+  const avoided = bIncidents - tIncidents;
+  const breakeven = breakEvenIncidentCost(dC, bSlow, tSlow);
   const g = T.gap;
   const nextLevel = Math.min(6, Math.ceil(current + 0.01));
   const nextCost = capacityCost(nextLevel);
@@ -68,14 +71,14 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
               <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>per year</div>
             </div>
             <div style={{ flex: 1, background: C.eS, borderRadius: 10, padding: T.upgPad, textAlign: "center" }}>
-              <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Peak slowdown you&apos;d eliminate</div>
-              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 2, fontWeight: 700, color: C.emerald }}>{fmtSlowdown(dSlow)}</div>
-              <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>faster at peak</div>
+              <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Peak incidents you&apos;d prevent</div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 2, fontWeight: 700, color: C.emerald }}>~{avoided >= 1 ? Math.round(avoided) : avoided.toFixed(1)}</div>
+              <div style={{ fontSize: T.upgLFs, color: C.subtle, marginTop: 2 }}>fewer per year</div>
             </div>
           </div>
           <div style={{ background: C.light, borderRadius: 10, padding: "12px 14px", textAlign: "center", borderLeft: `3px solid ${color}` }}>
-            <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>What each point of peak slowdown costs</div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgPpmFs + 2, fontWeight: 700, color }}>{fc(cpsx)}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/×</span></div>
+            <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Breakeven cost per incident</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgPpmFs + 2, fontWeight: 700, color }}>{isFinite(breakeven) ? fc(breakeven) : "N/A"}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/event</span></div>
           </div>
         </div>
       )}

@@ -42,3 +42,31 @@ export const THRESHOLDS: Threshold[] = [
 export function getThreshold(n: number): Threshold {
   return THRESHOLDS.find((t) => n >= t.min && n <= t.max) || THRESHOLDS[0];
 }
+
+/**
+ * Tiered conversion lift: % gained per 100ms removed, based on baseline latency.
+ * Sources: Akamai 2017 (7% mobile/100ms at peak), Deloitte/Google 2020 (8.4% retail/0.1s),
+ * Intuit (3%/s at >7s, 1%/s at 2–5s), eBay 2019 (0.5%/100ms), Brutlag 2009 (0.2%/100ms search).
+ * Rate declines because user perception of improvement is logarithmic (Nielsen, Card/Moran/Newell).
+ */
+export function conversionLiftPer100ms(baselineMs: number): number {
+  if (baselineMs > 2000) return 1.0;   // Slow sites: huge low-hanging fruit
+  if (baselineMs > 1000) return 0.7;   // Clearly slow: strong returns
+  if (baselineMs > 500)  return 0.4;   // Moderate: approaching CWV "good"
+  if (baselineMs > 200)  return 0.15;  // Fast: diminishing perceptual gains
+  if (baselineMs > 100)  return 0.04;  // Very fast: near perception threshold
+  if (baselineMs > 50)   return 0.01;  // Near-instant: sub-100ms ≈ imperceptible
+  return 0.003;                         // Below perception: no measurable conversion impact
+}
+
+/**
+ * Minimum monthly revenue for the latency improvement to pay for itself
+ * via conversion lift alone. Uses lift rate at baseline (conservative for large jumps).
+ * Formula: monthlyCost / (liftRate/100 × msImproved/100)
+ */
+export function breakEvenMonthlyRevenue(annualCost: number, msImproved: number, baselineMs: number): number {
+  const lift = conversionLiftPer100ms(baselineMs);
+  if (lift <= 0 || msImproved <= 0) return Infinity;
+  // annualCost = monthlyRevenue × 12 × (lift/100) × (msImproved/100)
+  return annualCost / (12 * (lift / 100) * (msImproved / 100));
+}

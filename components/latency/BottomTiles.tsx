@@ -2,7 +2,7 @@
 
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
 import { fc, fmtMs, fmtLatencyExact } from "@/lib/format";
-import { latencyCost, latencyMs, getThreshold } from "@/lib/models/latency";
+import { latencyCost, latencyMs, getThreshold, conversionLiftPer100ms, breakEvenMonthlyRevenue } from "@/lib/models/latency";
 
 interface Props {
   current: number;
@@ -15,9 +15,12 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
   const color = zoneColor(target);
   const th = getThreshold(target);
   const dC = latencyCost(target) - latencyCost(current);
-  const dMs = latencyMs(current) - latencyMs(target);
-  const cpms = dMs > 0 ? dC / dMs : 0;
-  const revThreshold = cpms > 0 ? cpms / 0.0007 : 0; // 100ms ≈ 7% conversion (Akamai)
+  const bMs = latencyMs(current);
+  const tMs = latencyMs(target);
+  const dMs = bMs - tMs;
+  const liftRate = conversionLiftPer100ms(bMs);
+  const totalLift = liftRate * (dMs / 100);
+  const breakeven = breakEvenMonthlyRevenue(dC, dMs, bMs);
   const g = T.gap;
 
   return (
@@ -52,13 +55,13 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
         <div style={{ fontSize: T.botBFs, color: C.body, lineHeight: 1.55, flex: 1 }}>
           {!isUpgrade
             ? `At ${fmtMs(latencyMs(target))}, you're within acceptable thresholds. No investment needed unless latency directly drives conversion.`
-            : target <= current + 2
-              ? `Shaving ${fmtMs(dMs)} costs +${fc(dC)}/yr. Worth it if each millisecond drives >${fc(cpms)} in annual conversion impact.`
-              : `Reaching ${fmtMs(latencyMs(target))} from ${fmtMs(latencyMs(current))} requires +${fc(dC)}/yr for ${fmtMs(dMs)} faster response. Only for sites where latency is the primary revenue driver.`}
+            : totalLift > 2
+              ? `Shaving ${fmtMs(dMs)} costs +${fc(dC)}/yr. At this baseline, each 100ms is worth ~${liftRate.toFixed(1)}% conversion lift — ${totalLift.toFixed(1)}% total. Worth it if your site makes >${fc(breakeven)}/mo.`
+              : `Reaching ${fmtMs(tMs)} from ${fmtMs(bMs)} requires +${fc(dC)}/yr for ~${totalLift.toFixed(2)}% conversion lift. Returns are diminishing — each 100ms only gains ~${liftRate.toFixed(2)}% at this speed.`}
         </div>
-        {isUpgrade && cpms > 0 && (
+        {isUpgrade && dMs > 0 && isFinite(breakeven) && (
           <div style={{ marginTop: 6, padding: T.roiPad, background: zoneSurface(target), borderRadius: 8, fontSize: T.roiFs, color: C.dark, lineHeight: 1.5 }}>
-            <strong>Quick math:</strong> If your site generates more than <strong style={{ color }}>{fc(revThreshold)}/yr</strong> in revenue, this latency improvement pays for itself.
+            <strong>Quick math:</strong> If your site makes more than <strong style={{ color }}>{fc(breakeven)}/mo</strong>, the ~{totalLift.toFixed(1)}% conversion lift pays for this.
           </div>
         )}
       </div>
