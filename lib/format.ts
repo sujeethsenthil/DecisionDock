@@ -1,5 +1,5 @@
 import { latencyMs } from "./models/latency";
-import { deploysPerDay } from "./models/velocity";
+import { deploysPerDay, mttrHours } from "./models/velocity";
 import { bufferMultiplier } from "./models/capacity";
 
 /* ── Currency ─────────────────────────────────────────── */
@@ -88,6 +88,19 @@ export function fmtVelocityExact(x: number): string {
 export function fmtCfr(pct: number): string {
   if (pct >= 10) return `${Math.round(pct)}%`;
   return `${pct.toFixed(1)}%`;
+}
+
+export function fmtMttr(hours: number): string {
+  if (hours >= 48) return `${Math.round(hours / 24)}d`;
+  if (hours >= 2) return `${Math.round(hours)}h`;
+  if (hours >= 1) return `${hours.toFixed(1)}h`;
+  const min = hours * 60;
+  if (min >= 10) return `${Math.round(min)} min`;
+  return `${min.toFixed(0)} min`;
+}
+
+export function fmtMttrExact(x: number): string {
+  return fmtMttr(mttrHours(x));
 }
 
 /* ── Capacity formatters ──────────────────────────────── */

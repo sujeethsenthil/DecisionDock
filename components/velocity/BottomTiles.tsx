@@ -1,8 +1,8 @@
 "use client";
 
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
-import { fc, fmtDeploys, fmtCfr, fmtVelocityExact } from "@/lib/format";
-import { velocityCost, deploysPerDay, changeFailRate, getThreshold } from "@/lib/models/velocity";
+import { fc, fmtDeploys, fmtCfr, fmtMttr, fmtVelocityExact } from "@/lib/format";
+import { velocityCost, deploysPerDay, changeFailRate, mttrHours, getThreshold } from "@/lib/models/velocity";
 
 interface Props {
   current: number;
@@ -19,6 +19,8 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
   const tCfr = changeFailRate(target);
   const dCfr = bCfr - tCfr;
   const cppt = dCfr > 0 ? dC / dCfr : 0;
+  const bMttr = mttrHours(current);
+  const tMttr = mttrHours(target);
   const g = T.gap;
 
   return (
@@ -54,8 +56,8 @@ export function BottomTiles({ current, target, isUpgrade, tokens: T }: Props) {
           {!isUpgrade
             ? `At ${fmtDeploys(deploysPerDay(target))}, you're in a solid cadence. No additional CI/CD investment needed unless failure rate is impacting customers.`
             : target <= current + 2
-              ? `Scaling to ${fmtDeploys(deploysPerDay(target))} costs +${fc(dC)}/yr and drops failure rate by ${dCfr.toFixed(1)} points. Worth it if each point costs your team >${fc(cppt)}/yr.`
-              : `Reaching ${fmtDeploys(deploysPerDay(target))} from ${fmtDeploys(deploysPerDay(current))} requires +${fc(dC)}/yr. Failure rate drops from ${fmtCfr(bCfr)} to ${fmtCfr(tCfr)}. Only if incident costs exceed ${fc(cppt)}/point/yr.`}
+              ? `Scaling to ${fmtDeploys(deploysPerDay(target))} costs +${fc(dC)}/yr. Failure rate drops ${dCfr.toFixed(1)} pts and recovery speeds from ${fmtMttr(bMttr)} to ${fmtMttr(tMttr)}. Worth it if each point costs >${fc(cppt)}/yr.`
+              : `Reaching ${fmtDeploys(deploysPerDay(target))} from ${fmtDeploys(deploysPerDay(current))} requires +${fc(dC)}/yr. Failure rate: ${fmtCfr(bCfr)} → ${fmtCfr(tCfr)}, recovery: ${fmtMttr(bMttr)} → ${fmtMttr(tMttr)}. Only if incident costs exceed ${fc(cppt)}/pt/yr.`}
         </div>
         {isUpgrade && cppt > 0 && (
           <div style={{ marginTop: 6, padding: T.roiPad, background: zoneSurface(target), borderRadius: 8, fontSize: T.roiFs, color: C.dark, lineHeight: 1.5 }}>

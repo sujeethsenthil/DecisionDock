@@ -33,3 +33,12 @@ export const THRESHOLDS: Threshold[] = [
 export function getThreshold(n: number): Threshold {
   return THRESHOLDS.find((t) => n >= t.min && n <= t.max) || THRESHOLDS[0];
 }
+
+/**
+ * Mean Time To Recovery (hours) by velocity level.
+ * DORA data: low performers recover in days–weeks, elite in under 1 hour.
+ * Modeled as exponential decay: 168hrs (1 week) at level 2 → ~0.2hrs (12 min) at level 6.
+ * Sources: Forsgren, Humble, Kim — Accelerate (2018); DORA State of DevOps 2023.
+ * Elite teams recover 2,604× faster than low performers.
+ */
+export const mttrHours = (x: number): number => 168 * Math.pow(0.18, x - 2);

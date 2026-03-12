@@ -6,8 +6,8 @@ import {
   ReferenceArea, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { C, zoneColor } from "@/lib/constants";
-import { fc, fmtVelocityTick, fmtDeploys, fmtCfr } from "@/lib/format";
-import { velocityCost, deploysPerDay, changeFailRate } from "@/lib/models/velocity";
+import { fc, fmtVelocityTick, fmtDeploys, fmtCfr, fmtMttr } from "@/lib/format";
+import { velocityCost, deploysPerDay, changeFailRate, mttrHours } from "@/lib/models/velocity";
 import { TrackingLabel } from "@/components/shared/TrackingLabel";
 import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
@@ -92,20 +92,20 @@ export function CostCurveChart({ data, current, target, isUpgrade, onSetCurrent,
         <TrackingLabel nines={current} color={C.blue} marginL={T.chartMarginL} marginR={T.chartMarginR}>
           <div style={{ fontSize: 9, color: C.blue, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Your velocity · {fmtDeploys(bD)}</div>
           <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, fontFamily: "'JetBrains Mono',monospace", marginTop: 1 }}>{fc(bC)}<span style={{ fontSize: 9, fontWeight: 400, color: C.subtle }}>/yr</span></div>
-          <div style={{ fontSize: 9, color: C.subtle }}>{fmtCfr(bCfr)} change failure rate</div>
+          <div style={{ fontSize: 9, color: C.subtle }}>{fmtCfr(bCfr)} CFR · {fmtMttr(mttrHours(current))} recovery</div>
         </TrackingLabel>
 
         {isUpgrade && (
           <TrackingLabel nines={target} color={color} marginL={T.chartMarginL} marginR={T.chartMarginR}>
             <div style={{ fontSize: 9, color, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Considering · {fmtDeploys(tD)}</div>
             <div style={{ marginTop: 1 }}><AnimatedCounter value={tC} color={color} size={13} /><span style={{ fontSize: 9, fontWeight: 400, color: C.subtle }}>/yr</span></div>
-            <div style={{ fontSize: 9, color: C.subtle }}>{fmtCfr(tCfr)} change failure rate</div>
+            <div style={{ fontSize: 9, color: C.subtle }}>{fmtCfr(tCfr)} CFR · {fmtMttr(mttrHours(target))} recovery</div>
           </TrackingLabel>
         )}
       </div>
       <div style={{ padding: `5px ${T.gap + 6}px 6px`, borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
         <span style={{ fontSize: T.srcFs, color: C.subtle }}>Click the chart to set where you are today · Sources: DORA/Accelerate, Forsgren et al.</span>
-        <span style={{ fontSize: T.srcFs, color: C.subtle }}>Elite teams ship 208× more often</span>
+        <span style={{ fontSize: T.srcFs, color: C.subtle }}>Elite: 208× more deploys, 2,604× faster recovery</span>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
-import { fc, fmtDeploys, fmtCfr, fmtVelocityExact } from "@/lib/format";
-import { velocityCost, deploysPerDay, changeFailRate } from "@/lib/models/velocity";
+import { fc, fmtDeploys, fmtCfr, fmtMttr, fmtVelocityExact } from "@/lib/format";
+import { velocityCost, deploysPerDay, changeFailRate, mttrHours } from "@/lib/models/velocity";
 import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
 interface Props {
@@ -21,6 +21,8 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
   const tCfr = changeFailRate(target);
   const dCfr = bCfr - tCfr;
   const cppt = dCfr > 0 ? dC / dCfr : 0; // cost per failure-rate point
+  const bMttr = mttrHours(current);
+  const tMttr = mttrHours(target);
   const g = T.gap;
   const nextLevel = Math.min(6, Math.ceil(current + 0.01));
   const nextCost = velocityCost(nextLevel);
@@ -34,11 +36,11 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
           <div style={{ background: C.bS, borderRadius: 10, padding: T.upgPad, marginBottom: g }}>
             <div style={{ fontSize: T.upgLFs, color: C.blue, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>You&apos;re here · {fmtDeploys(deploysPerDay(current))}</div>
             <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgNFs + 4, fontWeight: 700, color: C.navy }}>{fc(bC)}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/yr</span></div>
-            <div style={{ fontSize: T.upgLFs + 1, color: C.subtle, marginTop: 3 }}>{fmtCfr(bCfr)} of deploys cause issues</div>
+            <div style={{ fontSize: T.upgLFs + 1, color: C.subtle, marginTop: 3 }}>{fmtCfr(bCfr)} failure rate · {fmtMttr(bMttr)} recovery</div>
           </div>
           <div style={{ background: C.light, borderRadius: 10, padding: T.upgPad }}>
             <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>What the next level looks like</div>
-            <div style={{ fontSize: T.botSFs || 11, color: C.body, lineHeight: 1.5 }}>Reaching <strong style={{ color: C.amber }}>{fmtVelocityExact(nextLevel)}</strong> would cost ~<strong>{fc(nextCost)}/yr</strong> — a {Math.round(nextCost / bC)}× increase. Failure rate drops by {fmtCfr(nextCfr)}.</div>
+            <div style={{ fontSize: T.botSFs || 11, color: C.body, lineHeight: 1.5 }}>Reaching <strong style={{ color: C.amber }}>{fmtVelocityExact(nextLevel)}</strong> would cost ~<strong>{fc(nextCost)}/yr</strong> — a {Math.round(nextCost / bC)}× increase. Recovery drops to {fmtMttr(mttrHours(nextLevel))}.</div>
           </div>
           <div style={{ marginTop: g, fontSize: T.upgLFs + 1, color: C.subtle, textAlign: "center", lineHeight: 1.4 }}>
             Drag the slider to see what faster shipping costs →
@@ -74,8 +76,8 @@ export function UpgradeCost({ current, target, isUpgrade, tokens: T }: Props) {
             </div>
           </div>
           <div style={{ background: C.light, borderRadius: 10, padding: "12px 14px", textAlign: "center", borderLeft: `3px solid ${color}` }}>
-            <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>What each point of failure rate costs</div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgPpmFs + 2, fontWeight: 700, color }}>{fc(cppt)}<span style={{ fontSize: 10, fontWeight: 400, color: C.subtle }}>/pt</span></div>
+            <div style={{ fontSize: T.upgLFs, color: C.subtle, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 }}>Recovery time improvement</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: T.upgPpmFs + 2, fontWeight: 700, color }}>{fmtMttr(bMttr)} → {fmtMttr(tMttr)}</div>
           </div>
         </div>
       )}
