@@ -12,9 +12,9 @@ interface ModuleTab {
 
 const MODULES: ModuleTab[] = [
   { label: "Uptime",    route: "/uptime",    live: true  },
-  { label: "Marketing", route: "/marketing", live: false },
-  { label: "Coverage",  route: "/coverage",  live: false },
-  { label: "CSAT",      route: "/csat",      live: false },
+  { label: "Latency",   route: "/latency",   live: true  },
+  { label: "Velocity",  route: "/velocity",  live: true  },
+  { label: "Capacity",  route: "/capacity",  live: true  },
 ];
 
 export function ModuleTabs() {

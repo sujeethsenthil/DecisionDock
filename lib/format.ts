@@ -1,3 +1,9 @@
+import { latencyMs } from "./models/latency";
+import { deploysPerDay } from "./models/velocity";
+import { bufferMultiplier } from "./models/capacity";
+
+/* ── Currency ─────────────────────────────────────────── */
+
 export function fc(n: number): string {
   if (n < 0) return `-${fc(-n)}`;
   if (n < 1e3) return `$${Math.round(n)}`;
@@ -12,6 +18,8 @@ export function fcFull(n: number): string {
   if (n >= 1e3) return `$${Math.round(n).toLocaleString("en-US")}`;
   return `$${Math.round(n)}`;
 }
+
+/* ── Uptime formatters ────────────────────────────────── */
 
 export function fmtNines(ni: number): string {
   const r = Math.round(ni);
@@ -39,4 +47,64 @@ export function fmtDur(m: number): string {
   const d = Math.floor(m / 1440);
   const h = Math.round((m % 1440) / 60);
   return h > 0 ? `${d}d ${h}h` : `${d}d`;
+}
+
+/* ── Latency formatters ───────────────────────────────── */
+
+export function fmtMs(ms: number): string {
+  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
+  if (ms >= 100) return `${Math.round(ms)}ms`;
+  if (ms >= 10) return `${ms.toFixed(1)}ms`;
+  return `${ms.toFixed(1)}ms`;
+}
+
+export function fmtLatencyTick(x: number): string {
+  const ms = latencyMs(Math.round(x));
+  return fmtMs(ms);
+}
+
+export function fmtLatencyExact(x: number): string {
+  return fmtMs(latencyMs(x));
+}
+
+/* ── Velocity formatters ──────────────────────────────── */
+
+export function fmtDeploys(dpd: number): string {
+  if (dpd < 0.3) return "Weekly";
+  if (dpd < 0.8) return `${dpd.toFixed(1)}/day`;
+  if (dpd < 2) return "Daily";
+  if (dpd < 10) return `${Math.round(dpd)}/day`;
+  return `${Math.round(dpd)}/day`;
+}
+
+export function fmtVelocityTick(x: number): string {
+  return fmtDeploys(deploysPerDay(Math.round(x)));
+}
+
+export function fmtVelocityExact(x: number): string {
+  return fmtDeploys(deploysPerDay(x));
+}
+
+export function fmtCfr(pct: number): string {
+  if (pct >= 10) return `${Math.round(pct)}%`;
+  return `${pct.toFixed(1)}%`;
+}
+
+/* ── Capacity formatters ──────────────────────────────── */
+
+export function fmtBuffer(mult: number): string {
+  return `${mult.toFixed(1)}×`;
+}
+
+export function fmtCapacityTick(x: number): string {
+  return fmtBuffer(bufferMultiplier(Math.round(x)));
+}
+
+export function fmtCapacityExact(x: number): string {
+  return fmtBuffer(bufferMultiplier(x));
+}
+
+export function fmtSlowdown(mult: number): string {
+  if (mult >= 10) return `${Math.round(mult)}×`;
+  return `${mult.toFixed(1)}×`;
 }

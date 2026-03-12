@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "DecisionDock — Where does your next investment stop paying off?",
-  description: "Visualize diminishing returns across uptime, marketing, test coverage, and CSAT. Each investment has an inflection point — find yours.",
+  description: "Visualize diminishing returns across uptime, latency, deployment velocity, and capacity. Each investment has an inflection point — find yours.",
   openGraph: {
     title: "DecisionDock — Decision Intelligence for Engineering Leaders",
     description: "Interactive diminishing returns curves. See where marginal cost exceeds marginal benefit.",
