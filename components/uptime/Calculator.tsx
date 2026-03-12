@@ -41,20 +41,6 @@ export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, up
 
   return (
     <div>
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 3, padding: 4, background: C.white, borderRadius: 10, border: `1px solid ${C.border}`, width: "fit-content", margin: `0 auto ${T.tabMb}px`, boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
-        {["Uptime", "Marketing", "Coverage", "CSAT"].map((l, i) => (
-          <button key={l} style={{
-            padding: T.tabPad, fontSize: T.tabFs, fontWeight: i === 0 ? 600 : 400,
-            borderRadius: 7, border: "none", cursor: i === 0 ? "default" : "not-allowed",
-            background: i === 0 ? C.navy : "transparent", color: i === 0 ? C.white : C.subtle,
-            opacity: i === 0 ? 1 : 0.5, transition: "all 0.15s",
-          }} title={i > 0 ? "Coming soon" : ""}>
-            {l}{i > 0 && <span style={{ fontSize: T.tabFs - 2, marginLeft: 4, opacity: 0.6 }}>soon</span>}
-          </button>
-        ))}
-      </div>
-
       {/* Main grid */}
       <div style={{ display: "flex", gap: g, alignItems: "stretch" }}>
         {/* Left column */}

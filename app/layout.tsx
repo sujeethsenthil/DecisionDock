@@ -17,11 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Nines Calculator — Should you invest in the next nine?",
-  description: "Each nine of uptime multiplies your total cost by 10×. Visualize the ROI of your next reliability investment.",
+  title: "DecisionDock — Where does your next investment stop paying off?",
+  description: "Visualize diminishing returns across uptime, marketing, test coverage, and CSAT. Each investment has an inflection point — find yours.",
   openGraph: {
-    title: "The Nines Calculator — DecisionDock",
-    description: "Should you invest in the next nine? Each nine of uptime ≈ 10× your total cost.",
+    title: "DecisionDock — Decision Intelligence for Engineering Leaders",
+    description: "Interactive diminishing returns curves. See where marginal cost exceeds marginal benefit.",
     type: "website",
   },
 };

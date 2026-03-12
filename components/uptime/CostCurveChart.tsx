@@ -8,8 +8,8 @@ import {
 import { C, zoneColor } from "@/lib/constants";
 import { fc, fmtNines, fmtNinesExact, fmtDur } from "@/lib/format";
 import { uptimeCost, uptimeDown } from "@/lib/models/uptime";
-import { TrackingLabel } from "./TrackingLabel";
-import { AnimatedCounter } from "./AnimatedCounter";
+import { TrackingLabel } from "@/components/shared/TrackingLabel";
+import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
 function ChartTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;

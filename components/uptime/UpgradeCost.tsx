@@ -3,7 +3,7 @@
 import { C, zoneColor, zoneSurface } from "@/lib/constants";
 import { fc, fmtNinesExact, fmtDur } from "@/lib/format";
 import { uptimeCost, uptimeDown } from "@/lib/models/uptime";
-import { AnimatedCounter } from "./AnimatedCounter";
+import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 
 interface Props {
   current: number;
