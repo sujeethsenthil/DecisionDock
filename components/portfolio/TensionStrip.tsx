@@ -18,12 +18,13 @@ interface CellProps {
   animatedValue?: number;
   animatedColor?: string;
   sub: string;
+  subItalic?: boolean;
   valueColor?: string;
   background?: string;
   isLast?: boolean;
 }
 
-function Cell({ label, value, animatedValue, animatedColor, sub, valueColor, background, isLast }: CellProps) {
+function Cell({ label, value, animatedValue, animatedColor, sub, subItalic, valueColor, background, isLast }: CellProps) {
   return (
     <div style={{
       flex: 1,
@@ -41,7 +42,7 @@ function Cell({ label, value, animatedValue, animatedColor, sub, valueColor, bac
           : <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 24, fontWeight: 700, color: valueColor ?? C.navy, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{value}</span>
         }
       </div>
-      <div style={{ fontSize: 11, color: C.subtle }}>{sub}</div>
+      <div style={{ fontSize: 11, color: C.subtle, fontStyle: subItalic ? "italic" : "normal" }}>{sub}</div>
     </div>
   );
 }
@@ -79,11 +80,12 @@ export function TensionStrip({ budget, currentSpend, desiredSpend, tokens: T }: 
         valueColor={desiredSpend > budget ? C.amber : C.emerald}
       />
       <Cell
-        label={overshoot ? "Overshoot" : "Surplus"}
+        label={overshoot ? "Overshoot" : "Unallocated"}
         animatedValue={gap}
-        animatedColor={overshoot ? C.red : C.emerald}
-        sub={overshoot ? "use sliders to close the gap" : "room to invest more"}
-        background={overshoot ? "rgba(239,68,68,0.06)" : "rgba(16,185,129,0.06)"}
+        animatedColor={overshoot ? C.red : C.amber}
+        sub={overshoot ? "use sliders to close the gap" : "drag the glowing sliders to invest it"}
+        subItalic={!overshoot}
+        background={overshoot ? "rgba(239,68,68,0.06)" : "rgba(245,158,11,0.06)"}
         isLast
       />
     </div>

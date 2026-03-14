@@ -15,6 +15,7 @@ import {
   Persona,
   currentTotalCost,
   targetTotalCost,
+  freePool,
   maxReachableX,
   AllocationState,
 } from "@/lib/models/portfolio";
@@ -51,10 +52,11 @@ export default function PortfolioPage() {
     setTargetX(key, x);
   }, [setTargetX]);
 
-  const curSpend = useMemo(() => currentTotalCost(state), [state]);
-  const desSpend = useMemo(() => targetTotalCost(state), [state]);
+  const curSpend  = useMemo(() => currentTotalCost(state), [state]);
+  const desSpend  = useMemo(() => targetTotalCost(state), [state]);
+  const pool      = useMemo(() => freePool(state), [state]);
 
-  const maxX = useMemo((): Persona => ({
+  const maxX: Persona = useMemo(() => ({
     uptime: maxReachableX("uptime", state),
     latency: maxReachableX("latency", state),
     velocity: maxReachableX("velocity", state),
@@ -131,7 +133,7 @@ export default function PortfolioPage() {
           </span>
         </div>
 
-        {/* ── SECTION 2: 2x2 grid + sidebar ── */}
+        {/* ── SECTION 2: 2×2 grid + sidebar ── */}
         <div style={{ display: "flex", gap: T.gap, alignItems: "flex-start" }}>
           <div style={{
             flex: 1,
@@ -147,6 +149,7 @@ export default function PortfolioPage() {
                 currentX={currentX[key]}
                 targetX={targetX[key]}
                 maxX={maxX[key]}
+                freePool={pool}
                 onTargetChange={handleTargetChange}
                 tokens={T}
               />

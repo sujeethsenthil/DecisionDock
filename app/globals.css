@@ -43,3 +43,58 @@ input[type="range"]:focus-visible {
   outline-offset: 4px;
   border-radius: 4px;
 }
+
+/* ── Portfolio surplus pulse ─────────────────────────────────────
+   Applied via .slider-pulse-{color} classes on the slider wrapper.
+   The ::before pseudo-element renders the glow ring behind the thumb.
+   We use CSS custom properties to pass the domain color through.
+──────────────────────────────────────────────────────────────── */
+
+@keyframes thumb-pulse {
+  0%   { box-shadow: 0 0 0 0px var(--pulse-color-mid), 0 2px 6px rgba(0,0,0,0.15); }
+  50%  { box-shadow: 0 0 0 7px var(--pulse-color-out), 0 2px 6px rgba(0,0,0,0.15); }
+  100% { box-shadow: 0 0 0 0px var(--pulse-color-mid), 0 2px 6px rgba(0,0,0,0.15); }
+}
+
+/* Pulse wrapper — sets CSS vars, animation fires on thumb */
+.slider-pulsing::-webkit-slider-thumb {
+  animation: thumb-pulse 2s ease-in-out infinite;
+}
+.slider-pulsing::-moz-range-thumb {
+  animation: thumb-pulse 2s ease-in-out infinite;
+}
+
+/* Per-domain color tokens */
+.pulse-blue {
+  --pulse-color-mid: rgba(59, 130, 246, 0.5);
+  --pulse-color-out: rgba(59, 130, 246, 0);
+}
+.pulse-emerald {
+  --pulse-color-mid: rgba(16, 185, 129, 0.5);
+  --pulse-color-out: rgba(16, 185, 129, 0);
+}
+.pulse-amber {
+  --pulse-color-mid: rgba(245, 158, 11, 0.5);
+  --pulse-color-out: rgba(245, 158, 11, 0);
+}
+.pulse-red {
+  --pulse-color-mid: rgba(239, 68, 68, 0.5);
+  --pulse-color-out: rgba(239, 68, 68, 0);
+}
+
+/* Surplus banner shimmer — subtle left-to-right sweep */
+@keyframes banner-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.surplus-banner {
+  background: linear-gradient(
+    90deg,
+    var(--banner-color-base) 0%,
+    var(--banner-color-shine) 50%,
+    var(--banner-color-base) 100%
+  );
+  background-size: 200% 100%;
+  animation: banner-shimmer 3s ease-in-out infinite;
+}
