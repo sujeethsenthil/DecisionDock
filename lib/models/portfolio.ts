@@ -1,7 +1,7 @@
 import { uptimeCost } from "./uptime";
 import { latencyCost } from "./latency";
 import { velocityCost } from "./velocity";
-import { capacityCost } from "./capacity";
+import { capacityCost, bufferMultiplier } from "./capacity";
 
 // ─── Domain config ────────────────────────────────────────────
 export type DomainKey = "uptime" | "latency" | "velocity" | "capacity";
@@ -74,15 +74,9 @@ export const DOMAIN_CONFIGS: Record<DomainKey, DomainConfig> = {
     color: "#EF4444",
     xMin: 2, xMax: 6, xFloor: 2.2,
     cost: capacityCost,
-    levelLabel: (x) => {
-      if (x < 2.5) return "Minimal";
-      if (x < 3.5) return "Standard";
-      if (x < 4.5) return "N+1";
-      if (x < 5.5) return "N+2";
-      return "Full redundancy";
-    },
-    axisMin: "Minimal · $15K/yr",
-    axisMax: "Full redundancy · $375M/yr",
+    levelLabel: (x) => `${bufferMultiplier(x).toFixed(1)}× capacity`,
+    axisMin: "1.2× · $15K/yr",
+    axisMax: "4.2× · $375M/yr",
   },
 };
 
