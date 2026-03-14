@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { C } from "@/lib/constants";
+import { useCallback } from "react";
 import { useViewport, useTokens } from "@/lib/hooks";
 import { capacityCurve } from "@/lib/models/capacity";
+import { usePlatformStore } from "@/lib/store/platform";
 import { CostCurveChart } from "./CostCurveChart";
 import { SliderPanel } from "./SliderPanel";
 import { UpgradeCost } from "./UpgradeCost";
@@ -19,22 +19,22 @@ interface Props {
 }
 
 export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, upgradeRef, bottomRef }: Props) {
-  const [current, setCurrent] = useState(2);
-  const [target, setTarget] = useState(3);
+  const { currentX: current, targetX: target } = usePlatformStore((s) => s.domains.capacity);
+  const setCurrentX = usePlatformStore((s) => s.setCurrentX);
+  const setTargetX  = usePlatformStore((s) => s.setTargetX);
   const { h } = useViewport();
   const T = useTokens(h);
 
   const handleSetCurrent = useCallback((level: number) => {
     const clamped = Math.round(Math.max(2, Math.min(5.9, level)) * 10) / 10;
-    setCurrent(clamped);
-    setTarget((t) => Math.max(t, clamped));
+    setCurrentX("capacity", clamped);
     onChartClick?.();
-  }, [onChartClick]);
+  }, [setCurrentX, onChartClick]);
 
   const handleSliderChange = useCallback((v: number) => {
-    setTarget(v);
+    setTargetX("capacity", v);
     onSliderDrag?.();
-  }, [onSliderDrag]);
+  }, [setTargetX, onSliderDrag]);
 
   const isUpgrade = target > current + 0.05;
   const g = T.gap;

@@ -11,10 +11,11 @@ interface ModuleTab {
 }
 
 const MODULES: ModuleTab[] = [
-  { label: "Uptime",    route: "/uptime",    live: true  },
-  { label: "Latency",   route: "/latency",   live: true  },
-  { label: "Velocity",  route: "/velocity",  live: true  },
-  { label: "Capacity",  route: "/capacity",  live: true  },
+  { label: "Uptime",    route: "/uptime",    live: true },
+  { label: "Latency",   route: "/latency",   live: true },
+  { label: "Velocity",  route: "/velocity",  live: true },
+  { label: "Capacity",  route: "/capacity",  live: true },
+  { label: "Portfolio", route: "/portfolio", live: true },
 ];
 
 export function ModuleTabs() {
@@ -35,37 +36,53 @@ export function ModuleTabs() {
         width: "fit-content",
         margin: `0 auto ${T.tabMb}px`,
         boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        alignItems: "center",
       }}
     >
       {MODULES.map((mod) => {
         const isActive = pathname === mod.route;
         const isClickable = mod.live;
+        const isPortfolio = mod.route === "/portfolio";
 
         return (
-          <button
-            key={mod.route}
-            onClick={() => { if (isClickable && !isActive) router.push(mod.route); }}
-            style={{
-              padding: T.tabPad,
-              fontSize: T.tabFs,
-              fontWeight: isActive ? 600 : 400,
-              borderRadius: 7,
-              border: "none",
-              cursor: isClickable ? "pointer" : "not-allowed",
-              background: isActive ? C.navy : "transparent",
-              color: isActive ? C.white : C.subtle,
-              opacity: isClickable ? 1 : 0.5,
-              transition: "all 0.15s",
-            }}
-            title={!isClickable ? "Coming soon" : ""}
-          >
-            {mod.label}
-            {!mod.live && (
-              <span style={{ fontSize: T.tabFs - 2, marginLeft: 4, opacity: 0.6 }}>
-                soon
-              </span>
+          <div key={mod.route} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+            {/* Vertical separator before Portfolio */}
+            {isPortfolio && (
+              <div style={{
+                width: 1,
+                height: 18,
+                background: C.border,
+                marginLeft: 4,
+                marginRight: 4,
+                flexShrink: 0,
+              }} />
             )}
-          </button>
+            <button
+              onClick={() => { if (isClickable && !isActive) router.push(mod.route); }}
+              style={{
+                padding: T.tabPad,
+                fontSize: T.tabFs,
+                fontWeight: isActive ? 600 : 400,
+                borderRadius: 7,
+                border: isPortfolio && !isActive ? `1px solid rgba(59,130,246,0.25)` : "none",
+                cursor: isClickable ? "pointer" : "not-allowed",
+                background: isActive
+                  ? (isPortfolio ? C.blue : C.navy)
+                  : "transparent",
+                color: isActive ? C.white : isPortfolio ? C.blue : C.subtle,
+                opacity: isClickable ? 1 : 0.5,
+                transition: "all 0.15s",
+              }}
+              title={!isClickable ? "Coming soon" : ""}
+            >
+              {mod.label}
+              {!mod.live && (
+                <span style={{ fontSize: T.tabFs - 2, marginLeft: 4, opacity: 0.6 }}>
+                  soon
+                </span>
+              )}
+            </button>
+          </div>
         );
       })}
     </div>
