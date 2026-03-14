@@ -48,7 +48,7 @@ export function DomainAllocationCard({
 
   // ROI message based on inflection position
   let roiMessage = "";
-  let roiColor = C.subtle;
+  let roiColor: string = C.subtle;
   if (targetX >= inflX + 0.4) {
     roiMessage = "Past inflection — returns have flattened. Consider trimming here first.";
     roiColor = C.red;

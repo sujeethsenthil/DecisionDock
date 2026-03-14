@@ -54,11 +54,12 @@ export default function PortfolioPage() {
   const curSpend = useMemo(() => currentTotalCost(state), [state]);
   const desSpend = useMemo(() => targetTotalCost(state), [state]);
 
-  const maxX = useMemo(() => {
-    return Object.fromEntries(
-      DOMAIN_ORDER.map((k) => [k, maxReachableX(k, state)])
-    ) as Persona;
-  }, [state]);
+  const maxX = useMemo((): Persona => ({
+    uptime: maxReachableX("uptime", state),
+    latency: maxReachableX("latency", state),
+    velocity: maxReachableX("velocity", state),
+    capacity: maxReachableX("capacity", state),
+  }), [state]);
 
   return (
     <main style={{ minHeight: "100vh", background: C.pageBg }}>
