@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useViewport, useTokens } from "@/lib/hooks";
 import { velocityCurve } from "@/lib/models/velocity";
 import { usePlatformStore } from "@/lib/store/platform";
-import { CostCurveChart } from "./CostCurveChart";
+import { Analytics } from "@/lib/analytics";
+import { DOMAIN_CONFIGS } from "@/lib/models/portfolio";
+import dynamic from "next/dynamic";
+const CostCurveChart = dynamic(() => import("./CostCurveChart").then(m => ({ default: m.CostCurveChart })), { ssr: false });
 import { SliderPanel } from "./SliderPanel";
 import { UpgradeCost } from "./UpgradeCost";
 import { BottomTiles } from "./BottomTiles";
@@ -24,23 +27,45 @@ export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, up
   const setTargetX  = usePlatformStore((s) => s.setTargetX);
   const { h } = useViewport();
   const T = useTokens(h);
+  const cfg = DOMAIN_CONFIGS.velocity;
+  const draggedRef = useRef(false);
+
+  useEffect(() => {
+    Analytics.domainViewed({ domain: "velocity" });
+  }, []);
 
   const handleSetCurrent = useCallback((level: number) => {
     const clamped = Math.round(Math.max(2, Math.min(5.9, level)) * 10) / 10;
     setCurrentX("velocity", clamped);
+    Analytics.chartClicked({
+      domain: "velocity",
+      current_x: clamped,
+      level_label: cfg.levelLabel(clamped),
+    });
     onChartClick?.();
-  }, [setCurrentX, onChartClick]);
+  }, [setCurrentX, cfg, onChartClick]);
 
   const handleSliderChange = useCallback((v: number) => {
     setTargetX("velocity", v);
+    if (!draggedRef.current) {
+      draggedRef.current = true;
+      Analytics.sliderDragged({
+        domain: "velocity",
+        target_x: v,
+        level_label: cfg.levelLabel(v),
+        annual_cost: cfg.cost(v),
+      });
+    }
     onSliderDrag?.();
-  }, [setTargetX, onSliderDrag]);
+  }, [setTargetX, cfg, onSliderDrag]);
+
+  const handlePointerUp = useCallback(() => { draggedRef.current = false; }, []);
 
   const isUpgrade = target > current + 0.05;
   const g = T.gap;
 
   return (
-    <div>
+    <div onPointerUp={handlePointerUp}>
       <div style={{ display: "flex", gap: g, alignItems: "stretch" }}>
         <div style={{ flex: "1 1 68%", minWidth: 420, display: "flex", flexDirection: "column", gap: g }}>
           <div ref={chartRef} style={{ display: "flex", flexDirection: "column", flex: "1 1 auto" }}>

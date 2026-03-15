@@ -53,6 +53,7 @@ export const usePlatformStore = create<PlatformStore>()(
     }),
     {
       name: "dd-platform-state",
+      skipHydration: true,
       storage: {
         getItem: (name) => {
           if (typeof window === "undefined") return null;

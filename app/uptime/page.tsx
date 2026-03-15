@@ -12,12 +12,16 @@ const ONBOARDING_KEY = "dd_uptime_onboarding_done";
 type Phase = "welcome" | "tour" | "done";
 
 export default function UptimePage() {
-  const [phase, setPhase] = useState<Phase>(() => {
-    if (typeof window !== "undefined" && localStorage.getItem(ONBOARDING_KEY)) {
-      return "done";
-    }
-    return "welcome";
-  });
+  // Start as "welcome" on server and first paint — resolve after mount
+  // to avoid synchronous localStorage read blocking the render.
+  const [phase, setPhase] = useState<Phase>("welcome");
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(ONBOARDING_KEY)) setPhase("done");
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [tourStep, setTourStep] = useState<TourStep>(0);
 
   const chartRef = useRef<HTMLDivElement>(null);
