@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useRef } from "react";
+import { useMemo, useCallback, useRef, useEffect } from "react";
 import { ModuleTabs } from "@/components/platform/ModuleTabs";
 import { DomainAllocationCard } from "@/components/portfolio/DomainAllocationCard";
 import { AllocationSidebar } from "@/components/portfolio/AllocationSidebar";
@@ -9,6 +9,7 @@ import { useViewport, useTokens } from "@/lib/hooks";
 import { C } from "@/lib/constants";
 import { fc, fcFull } from "@/lib/format";
 import { usePlatformStore } from "@/lib/store/platform";
+import { Analytics } from "@/lib/analytics";
 import {
   DOMAIN_ORDER,
   DOMAIN_CONFIGS,
@@ -23,10 +24,10 @@ import {
 
 // ── Utilization ring ──────────────────────────────────────────
 function UtilizationRing({ pct, color, size = 72 }: { pct: number; color: string; size?: number }) {
-  const r     = size * 0.39;
-  const circ  = 2 * Math.PI * r;
+  const r      = size * 0.39;
+  const circ   = 2 * Math.PI * r;
   const filled = Math.min(pct / 100, 1) * circ;
-  const fs    = size < 60 ? 10 : 13;
+  const fs     = size < 60 ? 10 : 13;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={C.border} strokeWidth="5" />
@@ -59,14 +60,12 @@ function StatsBar({
 
   return (
     <div style={{
-      display: "flex",
-      alignItems: "center",
+      display: "flex", alignItems: "center",
       background: C.white,
       borderRadius: compact ? 10 : 12,
       border: `1px solid ${C.border}`,
       boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-      overflow: "hidden",
-      width: "100%",
+      overflow: "hidden", width: "100%",
       maxWidth: compact ? "100%" : 660,
     }}>
       <div style={{ flex: 1, padding: pad, borderRight: `1px solid ${C.border}`, textAlign: "center" }}>
@@ -90,11 +89,9 @@ function StatsBar({
       <div style={{
         flex: compact ? "0 0 auto" : 1,
         padding: compact ? "8px 14px" : "14px 20px",
-        textAlign: "center",
-        display: "flex",
+        textAlign: "center", display: "flex",
         flexDirection: compact ? "row" : "column",
-        alignItems: "center",
-        gap: compact ? 8 : 4,
+        alignItems: "center", gap: compact ? 8 : 4,
       }}>
         {!compact && (
           <div style={{ fontSize: labelFs, fontWeight: 600, color: C.subtle, textTransform: "uppercase", letterSpacing: "0.07em" }}>
@@ -119,19 +116,11 @@ function ScrollCue({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       style={{
-        position: "absolute",
-        bottom: 28,
-        left: "50%",
+        position: "absolute", bottom: 28, left: "50%",
         transform: "translateX(-50%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        background: C.white,
-        border: `1px solid ${C.border}`,
-        borderRadius: 99,
-        padding: "10px 22px",
-        cursor: "pointer",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+        background: C.white, border: `1px solid ${C.border}`,
+        borderRadius: 99, padding: "10px 22px", cursor: "pointer",
         boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
         animation: "scroll-bounce 2.2s ease-in-out infinite",
         zIndex: 10,
@@ -177,20 +166,14 @@ export default function PortfolioPage() {
     [budget, currentX, targetX]
   );
 
-  const handleTargetChange = useCallback((key: DomainKey, x: number) => {
-    setTargetX(key, x);
-  }, [setTargetX]);
-
   const curSpend = useMemo(() => currentTotalCost(state), [state]);
   const desSpend = useMemo(() => targetTotalCost(state), [state]);
   const pool     = useMemo(() => freePool(state), [state]);
 
-  const maxX: Persona = useMemo(() => ({
-    uptime: maxReachableX("uptime", state),
-    latency: maxReachableX("latency", state),
-    velocity: maxReachableX("velocity", state),
-    capacity: maxReachableX("capacity", state),
-  }), [state]);
+  const maxX = useMemo(
+    () => Object.fromEntries(DOMAIN_ORDER.map((k) => [k, maxReachableX(k, state)])) as unknown as Persona,
+    [state]
+  );
 
   const isOver         = pool < 0;
   const isZero         = Math.abs(pool) < 1;
@@ -203,6 +186,49 @@ export default function PortfolioPage() {
     : isZero
     ? "Every dollar is working. Nicely done."
     : "Drag the glowing sliders below to put it to work";
+
+  // Track portfolio visited once on mount
+  useEffect(() => {
+    Analytics.portfolioVisited({
+      budget,
+      desired_spend: desSpend,
+      is_overshoot: isOver,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Track budget changes — debounced 800ms
+  const budgetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleBudgetChange = useCallback((v: number) => {
+    setBudget(v);
+    if (budgetTimerRef.current) clearTimeout(budgetTimerRef.current);
+    budgetTimerRef.current = setTimeout(() => {
+      Analytics.budgetEntered({
+        budget: v,
+        desired_spend: desSpend,
+        free_pool: v - desSpend,
+      });
+    }, 800);
+  }, [setBudget, desSpend]);
+
+  // Track allocation zeroed — fires once when pool first hits zero
+  const wasPositiveRef = useRef(true);
+  useEffect(() => {
+    if (wasPositiveRef.current && isZero) {
+      Analytics.allocationZeroed({
+        budget,
+        uptime_pct:   budget > 0 ? Math.round((DOMAIN_CONFIGS.uptime.cost(targetX.uptime)     / budget) * 100) : 0,
+        latency_pct:  budget > 0 ? Math.round((DOMAIN_CONFIGS.latency.cost(targetX.latency)   / budget) * 100) : 0,
+        velocity_pct: budget > 0 ? Math.round((DOMAIN_CONFIGS.velocity.cost(targetX.velocity) / budget) * 100) : 0,
+        capacity_pct: budget > 0 ? Math.round((DOMAIN_CONFIGS.capacity.cost(targetX.capacity) / budget) * 100) : 0,
+      });
+    }
+    wasPositiveRef.current = !isZero;
+  }, [isZero, budget, targetX]);
+
+  const handleTargetChange = useCallback((key: DomainKey, x: number) => {
+    setTargetX(key, x);
+  }, [setTargetX]);
 
   const scrollToAct2 = useCallback(() => {
     act2Ref.current?.scrollIntoView({ behavior: "smooth" });
@@ -235,13 +261,12 @@ export default function PortfolioPage() {
             Portfolio budget allocator
           </div>
 
-          {/* Budget + Gap — side by side, same scale */}
+          {/* Budget + Gap — side by side */}
           <div style={{
             display: "flex", alignItems: "stretch",
             justifyContent: "center", gap: 0,
             marginBottom: 16, width: "100%",
           }}>
-
             {/* Left — budget (the action) */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <div style={{
@@ -271,25 +296,19 @@ export default function PortfolioPage() {
                   value={budget}
                   onChange={(e) => {
                     const v = parseFloat(e.target.value);
-                    if (!isNaN(v) && v > 0) setBudget(v);
+                    if (!isNaN(v) && v > 0) handleBudgetChange(v);
                   }}
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 80, fontWeight: 800,
-                    color: C.navy,
-                    letterSpacing: "-0.04em", lineHeight: 1,
-                    background: "transparent",
-                    border: "none",
+                    color: C.navy, letterSpacing: "-0.04em", lineHeight: 1,
+                    background: "transparent", border: "none",
                     borderBottom: `3px solid ${C.navy}`,
                     outline: "none",
                     width: "8ch", minWidth: "4ch", maxWidth: "10ch",
-                    transition: "border-color 0.15s",
-                    padding: 0,
+                    transition: "border-color 0.15s", padding: 0,
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderBottomColor = C.blue;
-                    e.currentTarget.select();
-                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderBottomColor = C.blue; e.currentTarget.select(); }}
                   onBlur={(e) => { e.currentTarget.style.borderBottomColor = C.navy; }}
                 />
               </div>
@@ -323,7 +342,6 @@ export default function PortfolioPage() {
                 {heroSub}
               </span>
             </div>
-
           </div>
 
           {/* Domain cost pills */}
@@ -385,8 +403,6 @@ export default function PortfolioPage() {
         </div>
 
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: T.pad }}>
-
-          {/* Section header */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: C.subtle, textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
               Allocation plan
@@ -397,7 +413,6 @@ export default function PortfolioPage() {
             </span>
           </div>
 
-          {/* 2×2 grid + sidebar */}
           <div style={{ display: "flex", gap: T.gap, alignItems: "flex-start" }}>
             <div style={{
               flex: 1, minWidth: 0,
@@ -422,7 +437,6 @@ export default function PortfolioPage() {
               <AllocationSidebar budget={budget} targetX={targetX} tokens={T} />
             </div>
           </div>
-
         </div>
       </div>
 
