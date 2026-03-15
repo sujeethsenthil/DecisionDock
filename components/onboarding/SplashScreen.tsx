@@ -9,6 +9,7 @@ interface Stat {
   source: string;
 }
 
+// 3 stats max — 2s each = 6s total worst case vs 14s before
 const STATS: Stat[] = [
   {
     number: "$400B",
@@ -19,20 +20,8 @@ const STATS: Stat[] = [
   {
     number: "10×",
     line1: "the cost of each additional nine",
-    line2: "of uptime — and most teams don't see it coming.",
+    line2: "of uptime — most teams never see it coming.",
     source: "Google SRE Book",
-  },
-  {
-    number: "$44.5B",
-    line1: "in cloud infrastructure",
-    line2: "is projected to be wasted in 2025.",
-    source: "Harness State of Cloud Cost",
-  },
-  {
-    number: "98%",
-    line1: "of organizations say one hour",
-    line2: "of downtime costs over $100,000.",
-    source: "ITIC Hourly Cost of Downtime Survey",
   },
   {
     number: "65%",
@@ -42,111 +31,150 @@ const STATS: Stat[] = [
   },
 ];
 
+const AUTO_ADVANCE_MS = 2000;
+
 interface Props {
   onComplete: () => void;
 }
 
 export function SplashScreen({ onComplete }: Props) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [phase, setPhase] = useState<"in" | "visible" | "out">("in");
+  const [index, setIndex]     = useState(0);
+  const [phase, setPhase]     = useState<"in" | "visible" | "out">("in");
   const [exiting, setExiting] = useState(false);
 
-  const advanceOrFinish = useCallback(() => {
-    if (currentIndex < STATS.length - 1) {
+  const finish = useCallback(() => {
+    if (exiting) return;
+    setExiting(true);
+    setTimeout(onComplete, 400);
+  }, [exiting, onComplete]);
+
+  const advance = useCallback(() => {
+    if (exiting) return;
+    if (index < STATS.length - 1) {
       setPhase("out");
       setTimeout(() => {
-        setCurrentIndex((i) => i + 1);
+        setIndex((i) => i + 1);
         setPhase("in");
-        setTimeout(() => setPhase("visible"), 50);
-      }, 400);
+        setTimeout(() => setPhase("visible"), 30);
+      }, 300);
     } else {
-      setExiting(true);
-      setTimeout(onComplete, 600);
+      finish();
     }
-  }, [currentIndex, onComplete]);
+  }, [index, exiting, finish]);
 
-  // Auto-advance each stat
+  // Fade in on mount and on each stat change
   useEffect(() => {
-    setTimeout(() => setPhase("visible"), 50);
-    const timer = setTimeout(advanceOrFinish, 2800);
-    return () => clearTimeout(timer);
-  }, [currentIndex, advanceOrFinish]);
+    const t = setTimeout(() => setPhase("visible"), 30);
+    return () => clearTimeout(t);
+  }, [index]);
 
-  const stat = STATS[currentIndex];
+  // Auto-advance
+  useEffect(() => {
+    const t = setTimeout(advance, AUTO_ADVANCE_MS);
+    return () => clearTimeout(t);
+  }, [advance]);
+
+  const stat = STATS[index];
 
   return (
     <div
+      onClick={advance}
       style={{
         position: "fixed", inset: 0, zIndex: 20000,
         background: "#0F172A",
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
         opacity: exiting ? 0 : 1,
-        transition: "opacity 0.6s ease",
+        transition: "opacity 0.4s ease",
         cursor: "pointer",
+        userSelect: "none",
       }}
-      onClick={advanceOrFinish}
     >
-      {/* Stat content */}
+      {/* Stat */}
       <div
-        key={currentIndex}
+        key={index}
         style={{
-          textAlign: "center", maxWidth: 560, padding: "0 32px",
+          textAlign: "center", maxWidth: 560, padding: "0 40px",
           opacity: phase === "visible" ? 1 : 0,
-          transform: phase === "visible" ? "translateX(0)" : phase === "in" ? "translateX(60px)" : "translateX(-60px)",
-          transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+          transform: phase === "visible"
+            ? "translateX(0)"
+            : phase === "in" ? "translateX(48px)" : "translateX(-48px)",
+          transition: "opacity 0.35s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1)",
         }}
       >
         <div style={{
-          fontSize: 80, fontWeight: 800, color: "#FFFFFF",
-          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 80, fontWeight: 800,
+          fontFamily: "var(--font-jetbrains), 'JetBrains Mono', monospace",
+          color: "#FFFFFF",
           letterSpacing: "-0.04em", lineHeight: 1,
           marginBottom: 20,
         }}>
           {stat.number}
         </div>
         <div style={{
-          fontSize: 20, fontWeight: 300, color: "rgba(255,255,255,0.75)",
+          fontSize: 20, fontWeight: 300,
+          color: "rgba(255,255,255,0.75)",
           lineHeight: 1.5, letterSpacing: "-0.01em",
         }}>
           {stat.line1}
         </div>
         <div style={{
-          fontSize: 20, fontWeight: 300, color: "rgba(255,255,255,0.75)",
+          fontSize: 20, fontWeight: 300,
+          color: "rgba(255,255,255,0.75)",
           lineHeight: 1.5, letterSpacing: "-0.01em",
         }}>
           {stat.line2}
         </div>
         <div style={{
-          fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.25)",
-          marginTop: 16, letterSpacing: "0.02em",
+          fontSize: 11, color: "rgba(255,255,255,0.25)",
+          marginTop: 16, letterSpacing: "0.06em", textTransform: "uppercase",
         }}>
           — {stat.source}
         </div>
       </div>
 
-      {/* Progress dots */}
+      {/* Progress bar — cleaner than dots, shows time passing */}
       <div style={{
-        position: "absolute", bottom: 60,
-        display: "flex", gap: 8,
+        position: "absolute", bottom: 80,
+        width: 120, height: 2,
+        background: "rgba(255,255,255,0.12)",
+        borderRadius: 2, overflow: "hidden",
       }}>
-        {STATS.map((_, i) => (
-          <div key={i} style={{
-            width: i === currentIndex ? 24 : 8,
-            height: 8,
-            borderRadius: 4,
-            background: i === currentIndex ? "rgba(255,255,255,0.8)" : i < currentIndex ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.15)",
-            transition: "all 0.3s ease",
-          }} />
-        ))}
+        <div style={{
+          height: "100%",
+          width: `${((index + 1) / STATS.length) * 100}%`,
+          background: "rgba(255,255,255,0.7)",
+          borderRadius: 2,
+          transition: "width 0.3s ease",
+        }} />
       </div>
 
-      {/* Skip hint */}
-      <div style={{
-        position: "absolute", bottom: 30,
-        fontSize: 12, color: "rgba(255,255,255,0.2)",
-      }}>
-        Click to skip
-      </div>
+      {/* Skip — prominent, can't miss it */}
+      <button
+        onClick={(e) => { e.stopPropagation(); finish(); }}
+        style={{
+          position: "absolute", bottom: 28,
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          borderRadius: 99,
+          padding: "8px 20px",
+          fontSize: 12, fontWeight: 600,
+          color: "rgba(255,255,255,0.5)",
+          cursor: "pointer",
+          letterSpacing: "0.06em", textTransform: "uppercase",
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.14)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+        }}
+      >
+        Skip →
+      </button>
     </div>
   );
 }
