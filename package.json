@@ -23,7 +23,7 @@
     "recharts": "^2.14.1",
     "tailwind-merge": "^2.5.4",
     "zustand": "^5.0.11",
-    "posthog-js": "^1.236.0"
+    "posthog-js": "^1.360.2"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
