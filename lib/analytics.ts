@@ -1,21 +1,23 @@
-// ─── Mixpanel analytics wrapper ───────────────────────────────
-// All tracking calls go through this file — never call mixpanel directly
-// from components. This keeps the event taxonomy in one place and makes
-// it easy to add properties, rename events, or swap providers later.
+// ─── PostHog analytics wrapper ────────────────────────────────
+// All tracking calls go through this file — never call posthog directly
+// from components. Keeps the event taxonomy in one place and makes it
+// easy to add properties, rename events, or swap providers later.
 
-import mixpanel from "mixpanel-browser";
+import posthog from "posthog-js";
 
-const TOKEN = "e6fc3c47ceea39b4ee1beff2f7099d93";
+const KEY  = "phc_Xi1JHuizXtiXHNJYU0p9c0WqbaCUrTr1HiGHn0vrC8Y";
+const HOST = "https://us.i.posthog.com";
 
 let initialised = false;
 
 function init() {
   if (initialised || typeof window === "undefined") return;
-  mixpanel.init(TOKEN, {
-    track_pageview: false,   // we track manually for more control
-    persistence: "localStorage",
-    ignore_dnt: false,
-    batch_requests: true,
+  posthog.init(KEY, {
+    api_host: HOST,
+    person_profiles: "identified_only",
+    capture_pageview: false,   // we track manually for full control
+    capture_pageleave: true,   // free bounce rate signal
+    autocapture: false,        // manual only — keeps data clean
   });
   initialised = true;
 }
@@ -24,84 +26,48 @@ function init() {
 
 export type DomainName = "uptime" | "latency" | "velocity" | "capacity";
 
-interface DomainViewedProps {
-  domain: DomainName;
-}
-
-interface ChartClickedProps {
-  domain: DomainName;
-  current_x: number;
-  level_label: string;
-}
-
-interface SliderDraggedProps {
-  domain: DomainName;
-  target_x: number;
-  level_label: string;
-  annual_cost: number;
-}
-
-interface PortfolioVisitedProps {
-  budget: number;
-  desired_spend: number;
-  is_overshoot: boolean;
-}
-
-interface BudgetEnteredProps {
-  budget: number;
-  desired_spend: number;
-  free_pool: number;
-}
-
-interface AllocationZeroedProps {
-  budget: number;
-  uptime_pct: number;
-  latency_pct: number;
-  velocity_pct: number;
-  capacity_pct: number;
-}
-
-interface SliderPulsedProps {
-  domain: DomainName;
-  free_pool: number;
-}
-
 // ─── Track calls ──────────────────────────────────────────────
 
 export const Analytics = {
 
-  domainViewed(props: DomainViewedProps) {
+  domainViewed(domain: DomainName) {
     init();
-    mixpanel.track("Domain Viewed", props);
+    posthog.capture("domain_viewed", { domain });
   },
 
-  chartClicked(props: ChartClickedProps) {
+  chartClicked(domain: DomainName, currentX: number, levelLabel: string) {
     init();
-    mixpanel.track("Chart Clicked", props);
+    posthog.capture("chart_clicked", { domain, current_x: currentX, level_label: levelLabel });
   },
 
-  sliderDragged(props: SliderDraggedProps) {
+  sliderDragged(domain: DomainName, targetX: number, levelLabel: string, annualCost: number) {
     init();
-    mixpanel.track("Slider Dragged", props);
+    posthog.capture("slider_dragged", { domain, target_x: targetX, level_label: levelLabel, annual_cost: annualCost });
   },
 
-  portfolioVisited(props: PortfolioVisitedProps) {
+  portfolioVisited(budget: number, desiredSpend: number, isOvershoot: boolean) {
     init();
-    mixpanel.track("Portfolio Visited", props);
+    posthog.capture("portfolio_visited", { budget, desired_spend: desiredSpend, is_overshoot: isOvershoot });
   },
 
-  budgetEntered(props: BudgetEnteredProps) {
+  budgetEntered(budget: number, desiredSpend: number, freePool: number) {
     init();
-    mixpanel.track("Budget Entered", props);
+    posthog.capture("budget_entered", { budget, desired_spend: desiredSpend, free_pool: freePool });
   },
 
-  allocationZeroed(props: AllocationZeroedProps) {
+  allocationZeroed(budget: number, uptimePct: number, latencyPct: number, velocityPct: number, capacityPct: number) {
     init();
-    mixpanel.track("Allocation Zeroed", props);
+    posthog.capture("allocation_zeroed", {
+      budget,
+      uptime_pct:   uptimePct,
+      latency_pct:  latencyPct,
+      velocity_pct: velocityPct,
+      capacity_pct: capacityPct,
+    });
   },
 
-  sliderPulsed(props: SliderPulsedProps) {
+  surplusSliderPulsed(domain: DomainName, freePool: number) {
     init();
-    mixpanel.track("Surplus Slider Pulsed", props);
+    posthog.capture("surplus_slider_pulsed", { domain, free_pool: freePool });
   },
 };

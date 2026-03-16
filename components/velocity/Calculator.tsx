@@ -31,17 +31,13 @@ export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, up
   const draggedRef = useRef(false);
 
   useEffect(() => {
-    Analytics.domainViewed({ domain: "velocity" });
+    Analytics.domainViewed("velocity");
   }, []);
 
   const handleSetCurrent = useCallback((level: number) => {
     const clamped = Math.round(Math.max(2, Math.min(5.9, level)) * 10) / 10;
     setCurrentX("velocity", clamped);
-    Analytics.chartClicked({
-      domain: "velocity",
-      current_x: clamped,
-      level_label: cfg.levelLabel(clamped),
-    });
+    Analytics.chartClicked("velocity", clamped, cfg.levelLabel(clamped));
     onChartClick?.();
   }, [setCurrentX, cfg, onChartClick]);
 
@@ -49,12 +45,7 @@ export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, up
     setTargetX("velocity", v);
     if (!draggedRef.current) {
       draggedRef.current = true;
-      Analytics.sliderDragged({
-        domain: "velocity",
-        target_x: v,
-        level_label: cfg.levelLabel(v),
-        annual_cost: cfg.cost(v),
-      });
+      Analytics.sliderDragged("velocity", v, cfg.levelLabel(v), cfg.cost(v));
     }
     onSliderDrag?.();
   }, [setTargetX, cfg, onSliderDrag]);

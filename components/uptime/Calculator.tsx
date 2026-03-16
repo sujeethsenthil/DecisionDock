@@ -31,17 +31,13 @@ export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, up
   const draggedRef = useRef(false);
 
   useEffect(() => {
-    Analytics.domainViewed({ domain: "uptime" });
+    Analytics.domainViewed("uptime");
   }, []);
 
   const handleSetCurrent = useCallback((nines: number) => {
     const clamped = Math.round(Math.max(2, Math.min(5.9, nines)) * 10) / 10;
     setCurrentX("uptime", clamped);
-    Analytics.chartClicked({
-      domain: "uptime",
-      current_x: clamped,
-      level_label: cfg.levelLabel(clamped),
-    });
+    Analytics.chartClicked("uptime", clamped, cfg.levelLabel(clamped));
     onChartClick?.();
   }, [setCurrentX, cfg, onChartClick]);
 
@@ -49,12 +45,7 @@ export function Calculator({ onChartClick, onSliderDrag, chartRef, sliderRef, up
     setTargetX("uptime", v);
     if (!draggedRef.current) {
       draggedRef.current = true;
-      Analytics.sliderDragged({
-        domain: "uptime",
-        target_x: v,
-        level_label: cfg.levelLabel(v),
-        annual_cost: cfg.cost(v),
-      });
+      Analytics.sliderDragged("uptime", v, cfg.levelLabel(v), cfg.cost(v));
     }
     onSliderDrag?.();
   }, [setTargetX, cfg, onSliderDrag]);

@@ -189,11 +189,7 @@ export default function PortfolioPage() {
 
   // Track portfolio visited once on mount
   useEffect(() => {
-    Analytics.portfolioVisited({
-      budget,
-      desired_spend: desSpend,
-      is_overshoot: isOver,
-    });
+    Analytics.portfolioVisited(budget, desSpend, isOver);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -203,11 +199,7 @@ export default function PortfolioPage() {
     setBudget(v);
     if (budgetTimerRef.current) clearTimeout(budgetTimerRef.current);
     budgetTimerRef.current = setTimeout(() => {
-      Analytics.budgetEntered({
-        budget: v,
-        desired_spend: desSpend,
-        free_pool: v - desSpend,
-      });
+      Analytics.budgetEntered(v, desSpend, v - desSpend);
     }, 800);
   }, [setBudget, desSpend]);
 
@@ -215,13 +207,13 @@ export default function PortfolioPage() {
   const wasPositiveRef = useRef(true);
   useEffect(() => {
     if (wasPositiveRef.current && isZero) {
-      Analytics.allocationZeroed({
+      Analytics.allocationZeroed(
         budget,
-        uptime_pct:   budget > 0 ? Math.round((DOMAIN_CONFIGS.uptime.cost(targetX.uptime)     / budget) * 100) : 0,
-        latency_pct:  budget > 0 ? Math.round((DOMAIN_CONFIGS.latency.cost(targetX.latency)   / budget) * 100) : 0,
-        velocity_pct: budget > 0 ? Math.round((DOMAIN_CONFIGS.velocity.cost(targetX.velocity) / budget) * 100) : 0,
-        capacity_pct: budget > 0 ? Math.round((DOMAIN_CONFIGS.capacity.cost(targetX.capacity) / budget) * 100) : 0,
-      });
+        budget > 0 ? Math.round((DOMAIN_CONFIGS.uptime.cost(targetX.uptime)     / budget) * 100) : 0,
+        budget > 0 ? Math.round((DOMAIN_CONFIGS.latency.cost(targetX.latency)   / budget) * 100) : 0,
+        budget > 0 ? Math.round((DOMAIN_CONFIGS.velocity.cost(targetX.velocity) / budget) * 100) : 0,
+        budget > 0 ? Math.round((DOMAIN_CONFIGS.capacity.cost(targetX.capacity) / budget) * 100) : 0,
+      );
     }
     wasPositiveRef.current = !isZero;
   }, [isZero, budget, targetX]);
