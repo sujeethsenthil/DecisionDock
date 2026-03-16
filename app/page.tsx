@@ -5,18 +5,19 @@ import { ModuleTabs } from "@/components/platform/ModuleTabs";
 import { ModuleHero } from "@/components/platform/ModuleHero";
 import { Calculator } from "@/components/uptime/Calculator";
 import dynamic from "next/dynamic";
+const SplashScreen = dynamic(() => import("@/components/onboarding/SplashScreen").then(m => ({ default: m.SplashScreen })), { ssr: false });
 const WelcomeModal = dynamic(() => import("@/components/onboarding/WelcomeModal").then(m => ({ default: m.WelcomeModal })), { ssr: false });
 const OnboardingOverlay = dynamic(() => import("@/components/onboarding/OnboardingOverlay").then(m => ({ default: m.OnboardingOverlay })), { ssr: false });
 import type { TourStep } from "@/components/onboarding/OnboardingOverlay";
 
 const ONBOARDING_KEY = "dd_uptime_onboarding_done";
 
-type Phase = "welcome" | "tour" | "done";
+type Phase = "splash" | "welcome" | "tour" | "done";
 
 export default function UptimePage() {
-  // Start as "welcome" on server and first paint — resolve after mount
+  // Start as "splash" on server and first paint — resolve after mount
   // to avoid synchronous localStorage read blocking the render.
-  const [phase, setPhase] = useState<Phase>("welcome");
+  const [phase, setPhase] = useState<Phase>("splash");
 
   useEffect(() => {
     try {
@@ -87,6 +88,11 @@ export default function UptimePage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#F0F4F8", position: "relative" }}>
+      {/* Splash screen */}
+      {phase === "splash" && (
+        <SplashScreen onComplete={() => setPhase("welcome")} />
+      )}
+
       {/* Welcome modal */}
       {phase === "welcome" && (
         <WelcomeModal onStartTour={handleStartTour} onSkip={handleSkipAll} />

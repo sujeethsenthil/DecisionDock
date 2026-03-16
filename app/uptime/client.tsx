@@ -4,17 +4,18 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { ModuleTabs } from "@/components/platform/ModuleTabs";
 import { ModuleHero } from "@/components/platform/ModuleHero";
 import { Calculator } from "@/components/uptime/Calculator";
+import { SplashScreen } from "@/components/onboarding/SplashScreen";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { OnboardingOverlay, type TourStep } from "@/components/onboarding/OnboardingOverlay";
 
 const ONBOARDING_KEY = "dd_uptime_onboarding_done";
 
-type Phase = "welcome" | "tour" | "done";
+type Phase = "splash" | "welcome" | "tour" | "done";
 
 export default function UptimeClient() {
-  // Start as "welcome" on server and first paint — resolve after mount
+  // Start as "splash" on server and first paint — resolve after mount
   // to avoid synchronous localStorage read blocking the render.
-  const [phase, setPhase] = useState<Phase>("welcome");
+  const [phase, setPhase] = useState<Phase>("splash");
 
   useEffect(() => {
     try {
@@ -85,6 +86,11 @@ export default function UptimeClient() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#F0F4F8", position: "relative" }}>
+      {/* Splash screen */}
+      {phase === "splash" && (
+        <SplashScreen onComplete={() => setPhase("welcome")} />
+      )}
+
       {/* Welcome modal */}
       {phase === "welcome" && (
         <WelcomeModal onStartTour={handleStartTour} onSkip={handleSkipAll} />
