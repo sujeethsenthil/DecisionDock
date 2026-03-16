@@ -1,31 +1,16 @@
-"use client";
+import type { Metadata } from "next";
+import VelocityClient from "./client";
 
-import { useState, useRef, useCallback } from "react";
-import { ModuleTabs } from "@/components/platform/ModuleTabs";
-import { ModuleHero } from "@/components/platform/ModuleHero";
-import { Calculator } from "@/components/velocity/Calculator";
+export const metadata: Metadata = {
+  title: "Deployment Velocity Cost Calculator — DecisionDock",
+  description: "See the real cost of shipping faster. From weekly releases to elite CI/CD — find where deployment velocity stops paying off.",
+  openGraph: {
+    title: "Should you ship faster? — DecisionDock",
+    description: "Interactive deployment velocity curve. See where each step up in cadence stops paying off.",
+    type: "website",
+  },
+};
 
 export default function VelocityPage() {
-  const chartRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const upgradeRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <main style={{ minHeight: "100vh", background: "#F0F4F8", position: "relative" }}>
-      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "30px 48px 16px" }}>
-        <ModuleHero
-          headline="Should you ship faster?"
-          subtext="Click the chart to set your deploy cadence. Drag the slider to see what the next level costs."
-        />
-        <ModuleTabs />
-        <Calculator
-          chartRef={chartRef}
-          sliderRef={sliderRef}
-          upgradeRef={upgradeRef}
-          bottomRef={bottomRef}
-        />
-      </div>
-    </main>
-  );
+  return <VelocityClient />;
 }

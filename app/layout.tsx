@@ -18,12 +18,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DecisionDock — Where does your next investment stop paying off?",
-  description: "Visualize diminishing returns across uptime, latency, deployment velocity, and capacity. Each investment has an inflection point — find yours.",
+  title: {
+    default: "DecisionDock — Where does your next investment stop paying off?",
+    template: "%s",
+  },
+  description: "Interactive diminishing returns calculators for engineering leaders. See the exact cost of each uptime nine, each millisecond of latency, each step up in deployment velocity and capacity.",
   openGraph: {
     title: "DecisionDock — Decision Intelligence for Engineering Leaders",
-    description: "Interactive diminishing returns curves. See where marginal cost exceeds marginal benefit.",
+    description: "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
     type: "website",
+    siteName: "DecisionDock",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DecisionDock — Where does your next investment stop paying off?",
+    description: "Interactive diminishing returns curves for engineering leaders.",
   },
 };
 
