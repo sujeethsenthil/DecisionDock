@@ -92,7 +92,7 @@ export function DomainAllocationCard({
       background: C.white,
       borderRadius: 12,
       border: `1px solid ${shouldPulse ? cfg.color : C.border}`,
-      padding: "16px 18px",
+      padding: "12px 14px",
       boxShadow: shouldPulse
         ? `0 0 0 1px ${cfg.color}22, 0 2px 12px ${cfg.color}18`
         : "0 1px 3px rgba(0,0,0,0.04)",
@@ -153,7 +153,7 @@ export function DomainAllocationCard({
         display: "flex",
         alignItems: "center",
         gap: 10,
-        padding: "10px 14px",
+        padding: "6px 10px",
         background: C.pageBg,
         borderRadius: 8,
         border: `1px solid ${C.border}`,

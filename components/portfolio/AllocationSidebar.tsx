@@ -48,9 +48,6 @@ export function AllocationSidebar({ budget, targetX, tokens: T }: Props) {
 
   return (
     <div style={{
-      position: "sticky",
-      top: 24,
-      alignSelf: "flex-start",
       background: C.white,
       borderRadius: 12,
       border: `1px solid ${C.border}`,
