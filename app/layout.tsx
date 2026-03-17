@@ -23,17 +23,21 @@ export const metadata: Metadata = {
     default: "DecisionDock — Where does your next investment stop paying off?",
     template: "%s",
   },
-  description: "Interactive diminishing returns calculators for engineering leaders. Find where uptime, latency, velocity, and capacity investment stops paying off.",
+  description:
+    "Interactive diminishing returns calculators for engineering leaders. Find where uptime, latency, velocity, and capacity investment stops paying off.",
   openGraph: {
-    title: "DecisionDock — Decision Intelligence for Engineering Leaders",
-    description: "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
+    title: "DecisionDock — Where does your next investment stop paying off?",
+    description:
+      "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
+    url: "https://decision-dock.vercel.app",
     type: "website",
     siteName: "DecisionDock",
   },
   twitter: {
     card: "summary_large_image",
     title: "DecisionDock — Where does your next investment stop paying off?",
-    description: "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
+    description:
+      "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
   },
 };
 

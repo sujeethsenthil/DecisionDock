@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const INTRO_KEY = "dd_intro_done";
 
@@ -83,7 +83,7 @@ export function IntroScreen({ onDone, isReturn = false }: Props) {
   const autoTimerRef = useRef<number | null>(null);
 
   // ── Dismiss ───────────────────────────────────────────────
-  const dismiss = () => {
+  const dismiss = useCallback(() => {
     if (doneRef.current) return;
     doneRef.current = true;
     if (autoTimerRef.current != null) {
@@ -94,7 +94,7 @@ export function IntroScreen({ onDone, isReturn = false }: Props) {
     setExiting(true);
     try { localStorage.setItem(INTRO_KEY, "1"); } catch {}
     setTimeout(onDone, 380);
-  };
+  }, [onDone]);
 
   // ── Toggle pause ──────────────────────────────────────────
   const togglePause = (e: React.MouseEvent) => {
@@ -213,7 +213,7 @@ export function IntroScreen({ onDone, isReturn = false }: Props) {
         autoTimerRef.current = null;
       }
     };
-  }, [isReturn, mounted, held]); 
+  }, [isReturn, mounted, held, dismiss]); 
 
   // ─────────────────────────────────────────────────────────
   return (
