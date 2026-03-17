@@ -7,6 +7,7 @@ import { AllocationSidebar } from "@/components/portfolio/AllocationSidebar";
 import { AnimatedCounter } from "@/components/shared/AnimatedCounter";
 import { useViewport, useTokens } from "@/lib/hooks";
 import { C } from "@/lib/constants";
+import { fcFull, parseCurrencyInput } from "@/lib/format";
 import { usePlatformStore } from "@/lib/store/platform";
 import { Analytics } from "@/lib/analytics";
 import { OnboardingOverlay, type TourStep } from "@/components/onboarding/OnboardingOverlay";
@@ -34,6 +35,8 @@ export default function PortfolioClient() {
   const STORAGE_KEY = "dd_onboarding_portfolio";
   const [tourPhase, setTourPhase] = useState<"idle" | "tour" | "done">("idle");
   const [tourStep, setTourStep] = useState<TourStep>(0);
+  const [budgetInputFocused, setBudgetInputFocused] = useState(false);
+  const [budgetEditStr, setBudgetEditStr] = useState("");
 
   useEffect(() => {
     try {
@@ -197,7 +200,7 @@ export default function PortfolioClient() {
           padding: "12px 0 8px",
         }}
       >
-        This is what your decisions mean to your portfolio
+        Where should your next dollar go?
       </div>
 
       {/* Budget + pool card */}
@@ -255,11 +258,25 @@ export default function PortfolioClient() {
             $
           </span>
           <input
-            type="number"
-            value={budget}
+            type="text"
+            inputMode="numeric"
+            value={budgetInputFocused ? budgetEditStr : fcFull(budget).slice(1)}
             onChange={(e) => {
-              const v = parseFloat(e.target.value);
+              setBudgetEditStr(e.target.value);
+              const v = parseCurrencyInput(e.target.value);
               if (!isNaN(v) && v > 0) handleBudgetChange(v);
+            }}
+            onFocus={(e) => {
+              setBudgetEditStr(String(Math.round(budget)));
+              setBudgetInputFocused(true);
+              e.currentTarget.style.borderBottomColor = C.blue;
+              e.currentTarget.select();
+            }}
+            onBlur={(e) => {
+              const v = parseCurrencyInput(budgetEditStr || e.currentTarget.value);
+              if (!isNaN(v) && v > 0) handleBudgetChange(v);
+              setBudgetInputFocused(false);
+              e.currentTarget.style.borderBottomColor = C.navy;
             }}
             style={{
               fontFamily: "'JetBrains Mono', monospace",
@@ -272,18 +289,12 @@ export default function PortfolioClient() {
               border: "none",
               borderBottom: `2px solid ${C.navy}`,
               outline: "none",
-              width: "8ch",
+              width: "10ch",
               minWidth: "4ch",
-              maxWidth: "10ch",
+              maxWidth: "14ch",
               transition: "border-color 0.15s",
               padding: 0,
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderBottomColor = C.blue;
-              e.currentTarget.select();
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderBottomColor = C.navy;
+              fontVariantNumeric: "tabular-nums",
             }}
           />
           </div>

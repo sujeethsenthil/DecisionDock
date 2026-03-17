@@ -19,6 +19,22 @@ export function fcFull(n: number): string {
   return `$${Math.round(n)}`;
 }
 
+/** Parse user input for currency: strips $ and commas, handles K/M suffix. */
+export function parseCurrencyInput(s: string): number {
+  const t = s.replace(/[$,\s]/g, "").trim();
+  if (!t) return NaN;
+  const upper = t.toUpperCase();
+  if (upper.endsWith("M")) {
+    const n = parseFloat(t.slice(0, -1));
+    return isNaN(n) ? NaN : n * 1e6;
+  }
+  if (upper.endsWith("K")) {
+    const n = parseFloat(t.slice(0, -1));
+    return isNaN(n) ? NaN : n * 1e3;
+  }
+  return parseFloat(t);
+}
+
 /* ── Uptime formatters ────────────────────────────────── */
 
 export function fmtNines(ni: number): string {

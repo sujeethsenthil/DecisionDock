@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { C } from "@/lib/constants";
+import { fcFull, parseCurrencyInput } from "@/lib/format";
 import { useTokens } from "@/lib/hooks";
 import { Industry, Scale } from "@/lib/models/portfolio";
 
@@ -32,6 +34,9 @@ export function BudgetInput({
   onBudgetChange, onIndustryChange, onScaleChange,
   tokens: T,
 }: Props) {
+  const [budgetFocused, setBudgetFocused] = useState(false);
+  const [budgetEditStr, setBudgetEditStr] = useState("");
+
   const selectStyle = {
     width: "100%",
     padding: "10px 12px",
@@ -71,11 +76,22 @@ export function BudgetInput({
               fontSize: 14, fontWeight: 600, color: C.subtle,
             }}>$</span>
             <input
-              type="number"
-              value={budget}
+              type="text"
+              inputMode="numeric"
+              value={budgetFocused ? budgetEditStr : fcFull(budget).slice(1)}
               onChange={(e) => {
-                const v = parseFloat(e.target.value);
+                setBudgetEditStr(e.target.value);
+                const v = parseCurrencyInput(e.target.value);
                 if (!isNaN(v) && v > 0) onBudgetChange(v);
+              }}
+              onFocus={() => {
+                setBudgetEditStr(String(Math.round(budget)));
+                setBudgetFocused(true);
+              }}
+              onBlur={(e) => {
+                const v = parseCurrencyInput(budgetEditStr || e.currentTarget.value);
+                if (!isNaN(v) && v > 0) onBudgetChange(v);
+                setBudgetFocused(false);
               }}
               style={{
                 width: "100%",
@@ -88,6 +104,7 @@ export function BudgetInput({
                 borderRadius: 8,
                 outline: "none",
                 boxSizing: "border-box",
+                fontVariantNumeric: "tabular-nums",
               }}
             />
           </div>
