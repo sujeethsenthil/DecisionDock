@@ -27,3 +27,5 @@ export function zoneSurface(n: number): string {
 export function zoneLabel(n: number): string {
   return n <= 3 ? "Cost-effective" : n <= 4 ? "Diminishing returns" : "Extreme cost";
 }
+
+export const PORTFOLIO_LIVE = false;

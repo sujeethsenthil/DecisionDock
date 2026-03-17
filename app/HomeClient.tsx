@@ -4,32 +4,36 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IntroScreen, INTRO_KEY } from "@/components/onboarding/IntroScreen";
 import { Analytics } from "@/lib/analytics";
+import { PORTFOLIO_LIVE } from "@/lib/constants";
 
 export default function HomeClient() {
   const router = useRouter();
   const [showIntro, setShowIntro] = useState(false);
+  const [isReturnVisitor, setIsReturnVisitor] = useState(false);
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     try {
       const done = localStorage.getItem(INTRO_KEY);
+      const hasSeenIntro = Boolean(done);
+      setIsReturnVisitor(hasSeenIntro);
       setChecked(true);
-      if (done) {
-        router.replace("/uptime");
-        return;
-      }
       setShowIntro(true);
-      Analytics.introViewed();
+      if (!hasSeenIntro) {
+        Analytics.introViewed();
+      }
     } catch {
       setChecked(true);
       setShowIntro(true);
       Analytics.introViewed();
     }
-  }, [router]);
+  }, []);
+
+  const destination = PORTFOLIO_LIVE && isReturnVisitor ? "/portfolio" : "/uptime";
 
   const handleIntroDone = () => {
     Analytics.introDone();
-    router.push("/uptime");
+    router.push(destination);
   };
 
   if (!checked) {
@@ -47,5 +51,5 @@ export default function HomeClient() {
     return null;
   }
 
-  return <IntroScreen onDone={handleIntroDone} />;
+  return <IntroScreen onDone={handleIntroDone} isReturn={isReturnVisitor} />;
 }

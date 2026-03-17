@@ -6,6 +6,8 @@ export const INTRO_KEY = "dd_intro_done";
 
 interface Props {
   onDone: () => void;
+  /** When true, skip animation and show static three-card view with "Click anywhere to continue" */
+  isReturn?: boolean;
 }
 
 const DURATION = 7000;
@@ -48,38 +50,46 @@ const PANELS = [
     check:    false,
   },
   {
-    label:      "The clarity",
+    label:      "The Allocation",
     labelColor: "#10B981",
     borderTop:  "2px solid rgba(16,185,129,0.5)",
     bars: [
-      { h: 28, fill: "rgba(255,255,255,0.18)" },
-      { h: 34, fill: "#10B981"               },
-      { h: 26, fill: "rgba(255,255,255,0.18)" },
-      { h: 30, fill: "rgba(255,255,255,0.18)" },
+      { h: 32, fill: "#3B82F6"  },  // uptime — blue
+      { h: 18, fill: "#10B981"  },  // latency — emerald
+      { h: 42, fill: "#F59E0B"  },  // velocity — amber (tallest = priority)
+      { h: 22, fill: "#EF4444"  },  // capacity — red
     ],
-    badge:    null,
-    caption:  "See the outcome of every dollar. Rebalance with conviction.",
-    question: false,
-    check:    true,
+    badge:     null,
+    caption:   "One budget. Four domains. See exactly where to put your next dollar.",
+    question:  false,
+    check:     false,
+    budgetLine: true,
   },
 ];
 
-export function IntroScreen({ onDone }: Props) {
+export function IntroScreen({ onDone, isReturn = false }: Props) {
   const [mounted,  setMounted]  = useState(false);
   const [exiting,  setExiting]  = useState(false);
   const [paused,   setPaused]   = useState(false);
-  const [stage,    setStage]    = useState([0, 0, 0]);
+  const [stage,    setStage]    = useState<[number, number, number]>(isReturn ? [3, 3, 3] : [0, 0, 0]);
   const [progress, setProgress] = useState(0);
+  const [hintPulse, setHintPulse] = useState(false);
+  const [held, setHeld] = useState(false);
 
   const rafRef      = useRef<number>(0);
   const startRef    = useRef<number>(0);
   const pausedAtRef = useRef<number>(0);
   const doneRef     = useRef(false);
+  const autoTimerRef = useRef<number | null>(null);
 
   // ── Dismiss ───────────────────────────────────────────────
   const dismiss = () => {
     if (doneRef.current) return;
     doneRef.current = true;
+    if (autoTimerRef.current != null) {
+      clearTimeout(autoTimerRef.current);
+      autoTimerRef.current = null;
+    }
     cancelAnimationFrame(rafRef.current);
     setExiting(true);
     try { localStorage.setItem(INTRO_KEY, "1"); } catch {}
@@ -92,29 +102,47 @@ export function IntroScreen({ onDone }: Props) {
     setPaused(p => !p);
   };
 
+  // ── Root click behaviour ──────────────────────────────────
+  // First-time: click anywhere skips intro.
+  // Return visitor: first click holds the intro (cancels auto-advance).
+  const handleRootClick = () => {
+    if (isReturn) {
+      if (!held) {
+        setHeld(true);
+        if (autoTimerRef.current != null) {
+          clearTimeout(autoTimerRef.current);
+          autoTimerRef.current = null;
+        }
+      }
+      return;
+    }
+    dismiss();
+  };
+
   // ── Mount fade-in ─────────────────────────────────────────
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 40);
     return () => clearTimeout(t);
   }, []);
 
-  // ── Staggered card entrance ───────────────────────────────
+  // ── Staggered card entrance (skip when isReturn: cards already at stage 3) ──
   useEffect(() => {
     if (!mounted) return;
+    if (isReturn) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     [0, 1, 2].forEach((i) => {
       const base = 300 + i * 600;
-      timers.push(setTimeout(() => setStage(s => { const n=[...s]; n[i]=1; return n; }), base));
-      timers.push(setTimeout(() => setStage(s => { const n=[...s]; n[i]=2; return n; }), base + 220));
-      timers.push(setTimeout(() => setStage(s => { const n=[...s]; n[i]=3; return n; }), base + 480));
+      timers.push(setTimeout(() => setStage(s => { const n: [number, number, number] = [...s]; n[i]=1; return n; }), base));
+      timers.push(setTimeout(() => setStage(s => { const n: [number, number, number] = [...s]; n[i]=2; return n; }), base + 220));
+      timers.push(setTimeout(() => setStage(s => { const n: [number, number, number] = [...s]; n[i]=3; return n; }), base + 480));
     });
     return () => timers.forEach(clearTimeout);
-  }, [mounted]);
+  }, [mounted, isReturn]);
 
-  // ── Progress bar + auto-dismiss ───────────────────────────
+  // ── Progress bar + auto-dismiss (skipped when isReturn: duration 0) ────────
   // Pause freezes elapsed time; resume continues from where it left off
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || isReturn) return;
     startRef.current = performance.now();
 
     const tick = (now: number) => {
@@ -128,10 +156,10 @@ export function IntroScreen({ onDone }: Props) {
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [mounted]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mounted, isReturn]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || isReturn) return;
     if (paused) {
       // Freeze: record how far we got
       cancelAnimationFrame(rafRef.current);
@@ -151,12 +179,46 @@ export function IntroScreen({ onDone }: Props) {
       rafRef.current = requestAnimationFrame(tick);
     }
     return () => cancelAnimationFrame(rafRef.current);
-  }, [paused]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [paused, isReturn]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Return-visitor micro-animation for hint text ───────────────────────────
+  useEffect(() => {
+    if (!isReturn || !mounted) return;
+    const id = setInterval(() => {
+      setHintPulse((v) => !v);
+    }, 900);
+    return () => clearInterval(id);
+  }, [isReturn, mounted]);
+
+  // ── Return-visitor auto-advance timer (3s) ─────────────────────────────────
+  useEffect(() => {
+    if (!isReturn || !mounted) return;
+    if (held) {
+      if (autoTimerRef.current != null) {
+        clearTimeout(autoTimerRef.current);
+        autoTimerRef.current = null;
+      }
+      return;
+    }
+    // start / restart 3s timer
+    if (autoTimerRef.current != null) {
+      clearTimeout(autoTimerRef.current);
+    }
+    autoTimerRef.current = window.setTimeout(() => {
+      dismiss();
+    }, 3000);
+    return () => {
+      if (autoTimerRef.current != null) {
+        clearTimeout(autoTimerRef.current);
+        autoTimerRef.current = null;
+      }
+    };
+  }, [isReturn, mounted, held]); 
 
   // ─────────────────────────────────────────────────────────
   return (
     <div
-      onClick={dismiss}
+      onClick={handleRootClick}
       style={{
         position:       "fixed",
         inset:          0,
@@ -307,33 +369,34 @@ export function IntroScreen({ onDone }: Props) {
                   </>
                 )}
 
-                {/* Clarity: ceiling line + checkmark */}
-                {panel.check && (
+                {/* Allocation: budget ceiling line + label */}
+                {"budgetLine" in panel && panel.budgetLine && (
                   <>
                     <line
-                      x1={6} y1={SVG_H - 34 - 8}
-                      x2={88} y2={SVG_H - 34 - 8}
-                      stroke="rgba(16,185,129,0.2)" strokeWidth={1}
-                    />
-                    <circle
-                      cx={82} cy={SVG_H - 34 - 18} r={6}
-                      fill="none"
-                      stroke="rgba(16,185,129,0.55)" strokeWidth={1}
+                      x1={6}
+                      y1={SVG_H - 42 - 4}
+                      x2={88}
+                      y2={SVG_H - 42 - 4}
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth={1}
                       style={{
                         opacity:    stage[i] >= 3 ? 1 : 0,
                         transition: "opacity 0.35s ease",
                       }}
                     />
-                    <path
-                      d="M79 14l2 2 4-4"
-                      stroke="#10B981" strokeWidth={1.2}
-                      strokeLinecap="round" strokeLinejoin="round"
-                      fill="none"
+                    <text
+                      x={88}
+                      y={SVG_H - 42 - 8}
+                      textAnchor="end"
+                      fontSize={7}
+                      fill="rgba(255,255,255,0.5)"
                       style={{
                         opacity:    stage[i] >= 3 ? 1 : 0,
-                        transition: "opacity 0.35s ease 0.1s",
+                        transition: "opacity 0.35s ease 0.06s",
                       }}
-                    />
+                    >
+                      budget
+                    </text>
                   </>
                 )}
               </svg>
@@ -350,72 +413,89 @@ export function IntroScreen({ onDone }: Props) {
           ))}
         </div>
 
-        {/* Bottom bar: pause + progress + skip */}
+        {/* Bottom bar: return visitor = single CTA; first-time = pause + progress + skip */}
         <div style={{
           display:     "flex",
           alignItems:  "center",
           gap:         14,
         }}>
+          {isReturn ? (
+            <div
+              style={{
+                flex:          1,
+                textAlign:     "center",
+                fontSize:      11,
+                color:         "rgba(255,255,255,0.2)",
+                letterSpacing: "0.03em",
+                opacity:       hintPulse ? 0.55 : 0.25,
+                transform:     hintPulse ? "translateY(0)" : "translateY(1px)",
+                transition:    "opacity 0.4s ease-out, transform 0.4s ease-out",
+              }}
+            >
+              {held ? "Holding intro — no auto-advance" : "Auto-advancing in 3 seconds · Click to hold"}
+            </div>
+          ) : (
+            <>
+              {/* Pause / Resume button */}
+              <button
+                onClick={togglePause}
+                title={paused ? "Resume" : "Pause"}
+                style={{
+                  background:   "rgba(255,255,255,0.07)",
+                  border:       "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 8,
+                  width:        32,
+                  height:       24,
+                  display:      "flex",
+                  alignItems:   "center",
+                  justifyContent: "center",
+                  cursor:       "pointer",
+                  flexShrink:   0,
+                  transition:   "background 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+              >
+                {paused ? (
+                  // Play triangle
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 1.5l6 3.5-6 3.5V1.5z" fill="rgba(255,255,255,0.5)"/>
+                  </svg>
+                ) : (
+                  // Pause bars
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <rect x="2" y="1.5" width="2.5" height="7" rx="1" fill="rgba(255,255,255,0.5)"/>
+                    <rect x="5.5" y="1.5" width="2.5" height="7" rx="1" fill="rgba(255,255,255,0.5)"/>
+                  </svg>
+                )}
+              </button>
 
-          {/* Pause / Resume button */}
-          <button
-            onClick={togglePause}
-            title={paused ? "Resume" : "Pause"}
-            style={{
-              background:   "rgba(255,255,255,0.07)",
-              border:       "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 8,
-              width:        32,
-              height:       24,
-              display:      "flex",
-              alignItems:   "center",
-              justifyContent: "center",
-              cursor:       "pointer",
-              flexShrink:   0,
-              transition:   "background 0.15s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
-          >
-            {paused ? (
-              // Play triangle
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M2 1.5l6 3.5-6 3.5V1.5z" fill="rgba(255,255,255,0.5)"/>
-              </svg>
-            ) : (
-              // Pause bars
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <rect x="2" y="1.5" width="2.5" height="7" rx="1" fill="rgba(255,255,255,0.5)"/>
-                <rect x="5.5" y="1.5" width="2.5" height="7" rx="1" fill="rgba(255,255,255,0.5)"/>
-              </svg>
-            )}
-          </button>
+              {/* Progress bar */}
+              <div style={{
+                flex: 1, height: 2,
+                background: "rgba(255,255,255,0.07)",
+                borderRadius: 2, overflow: "hidden",
+              }}>
+                <div style={{
+                  height:     "100%",
+                  width:      `${progress * 100}%`,
+                  background: "#F59E0B",
+                  borderRadius: 2,
+                  transition: paused ? "none" : "width 0.08s linear",
+                }} />
+              </div>
 
-          {/* Progress bar */}
-          <div style={{
-            flex: 1, height: 2,
-            background: "rgba(255,255,255,0.07)",
-            borderRadius: 2, overflow: "hidden",
-          }}>
-            <div style={{
-              height:     "100%",
-              width:      `${progress * 100}%`,
-              background: "#F59E0B",
-              borderRadius: 2,
-              transition: paused ? "none" : "width 0.08s linear",
-            }} />
-          </div>
-
-          {/* Skip */}
-          <span style={{
-            fontSize:      11,
-            color:         "rgba(255,255,255,0.2)",
-            whiteSpace:    "nowrap",
-            letterSpacing: "0.03em",
-          }}>
-            click to skip
-          </span>
-
+              {/* Skip */}
+              <span style={{
+                fontSize:      11,
+                color:         "rgba(255,255,255,0.2)",
+                whiteSpace:    "nowrap",
+                letterSpacing: "0.03em",
+              }}>
+                click to skip
+              </span>
+            </>
+          )}
         </div>
       </div>
     </div>
