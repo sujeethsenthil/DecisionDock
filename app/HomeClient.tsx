@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IntroScreen, INTRO_KEY } from "@/components/onboarding/IntroScreen";
+import { Analytics } from "@/lib/analytics";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -18,13 +19,16 @@ export default function HomeClient() {
         return;
       }
       setShowIntro(true);
+      Analytics.introViewed();
     } catch {
       setChecked(true);
       setShowIntro(true);
+      Analytics.introViewed();
     }
   }, [router]);
 
   const handleIntroDone = () => {
+    Analytics.introDone();
     router.push("/uptime");
   };
 

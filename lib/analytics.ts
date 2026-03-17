@@ -30,6 +30,8 @@ export type DomainName = "uptime" | "latency" | "velocity" | "capacity";
 
 export const Analytics = {
 
+  // ── Domain pages ────────────────────────────────────────────
+
   domainViewed(domain: DomainName) {
     init();
     posthog.capture("domain_viewed", { domain });
@@ -45,6 +47,8 @@ export const Analytics = {
     posthog.capture("slider_dragged", { domain, target_x: targetX, level_label: levelLabel, annual_cost: annualCost });
   },
 
+  // ── Portfolio page ───────────────────────────────────────────
+
   portfolioVisited(budget: number, desiredSpend: number, isOvershoot: boolean) {
     init();
     posthog.capture("portfolio_visited", { budget, desired_spend: desiredSpend, is_overshoot: isOvershoot });
@@ -53,6 +57,17 @@ export const Analytics = {
   budgetEntered(budget: number, desiredSpend: number, freePool: number) {
     init();
     posthog.capture("budget_entered", { budget, desired_spend: desiredSpend, free_pool: freePool });
+  },
+
+  // Fired on every portfolio slider move — key signal for allocation behaviour
+  portfolioSliderDragged(domain: DomainName, targetX: number, annualCost: number, freePool: number) {
+    init();
+    posthog.capture("portfolio_slider_dragged", {
+      domain,
+      target_x:    targetX,
+      annual_cost: annualCost,
+      free_pool:   freePool,
+    });
   },
 
   allocationZeroed(budget: number, uptimePct: number, latencyPct: number, velocityPct: number, capacityPct: number) {
@@ -69,5 +84,19 @@ export const Analytics = {
   surplusSliderPulsed(domain: DomainName, freePool: number) {
     init();
     posthog.capture("surplus_slider_pulsed", { domain, free_pool: freePool });
+  },
+
+  // ── Onboarding ───────────────────────────────────────────────
+
+  // Fired when the intro screen renders for the first time
+  introViewed() {
+    init();
+    posthog.capture("intro_viewed");
+  },
+
+  // Fired when the user clicks through and lands on /uptime
+  introDone() {
+    init();
+    posthog.capture("intro_done");
   },
 };

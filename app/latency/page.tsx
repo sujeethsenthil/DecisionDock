@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     description: "Interactive latency cost curve. See where each ms of improvement stops paying off and what your users actually notice.",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Should you chase the next millisecond? — DecisionDock",
+    description: "Interactive latency cost curve. See where each ms of improvement stops paying off and what your users actually notice.",
+  },
 };
 
 export default function LatencyPage() {

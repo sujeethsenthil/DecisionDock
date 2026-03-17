@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     description: "Interactive capacity cost curve. See what N+1 vs N+2 provisioning costs and where the redundancy returns flatten.",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "How much headroom do you actually need? — DecisionDock",
+    description: "Interactive capacity cost curve. See what N+1 vs N+2 provisioning costs and where the redundancy returns flatten.",
+  },
 };
 
 export default function CapacityPage() {

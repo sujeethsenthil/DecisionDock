@@ -18,11 +18,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://decision-dock.vercel.app"),
   title: {
     default: "DecisionDock — Where does your next investment stop paying off?",
     template: "%s",
   },
-  description: "Interactive diminishing returns calculators for engineering leaders. See the exact cost of each uptime nine, each millisecond of latency, each step up in deployment velocity and capacity.",
+  description: "Interactive diminishing returns calculators for engineering leaders. Find where uptime, latency, velocity, and capacity investment stops paying off.",
   openGraph: {
     title: "DecisionDock — Decision Intelligence for Engineering Leaders",
     description: "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "DecisionDock — Where does your next investment stop paying off?",
-    description: "Interactive diminishing returns curves for engineering leaders.",
+    description: "See where your next infrastructure dollar stops paying off. Interactive cost curves for uptime, latency, velocity, and capacity.",
   },
 };
 

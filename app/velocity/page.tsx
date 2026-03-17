@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     description: "Interactive deployment velocity curve. See what moving from weekly to daily deploys costs and where the returns flatten.",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Should you ship faster? — DecisionDock",
+    description: "Interactive deployment velocity curve. See what moving from weekly to daily deploys costs and where the returns flatten.",
+  },
 };
 
 export default function VelocityPage() {
