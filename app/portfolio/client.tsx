@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useRef, useEffect } from "react";
+import { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { ModuleTabs } from "@/components/platform/ModuleTabs";
 import { DomainAllocationCard } from "@/components/portfolio/DomainAllocationCard";
 import { AllocationSidebar } from "@/components/portfolio/AllocationSidebar";
@@ -10,6 +10,8 @@ import { C } from "@/lib/constants";
 import { fc, fcFull } from "@/lib/format";
 import { usePlatformStore } from "@/lib/store/platform";
 import { Analytics } from "@/lib/analytics";
+import { OnboardingOverlay, type TourStep } from "@/components/onboarding/OnboardingOverlay";
+import { TutorButton } from "@/components/onboarding/TutorButton";
 import {
   DOMAIN_ORDER,
   DOMAIN_CONFIGS,
@@ -140,7 +142,39 @@ function ScrollCue({ onClick }: { onClick: () => void }) {
 export default function PortfolioClient() {
   const { h }   = useViewport();
   const T       = useTokens(h);
-  const act2Ref = useRef<HTMLDivElement>(null);
+  const act2Ref      = useRef<HTMLDivElement>(null);
+  const budgetRef    = useRef<HTMLDivElement>(null);
+  const budgetCardRef = useRef<HTMLDivElement>(null);
+  const cardsRef     = useRef<HTMLDivElement>(null);
+  const sidebarRef   = useRef<HTMLDivElement>(null);
+
+  const STORAGE_KEY = "dd_onboarding_portfolio";
+  const [tourPhase, setTourPhase] = useState<"idle" | "tour" | "done">("idle");
+  const [tourStep,  setTourStep]  = useState<TourStep>(0);
+
+  useEffect(() => {
+    try { if (localStorage.getItem(STORAGE_KEY)) setTourPhase("done"); } catch {}
+  }, []);
+
+  const markTourDone = useCallback(() => {
+    try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const startTour = useCallback(() => { setTourStep(0); setTourPhase("tour"); }, []);
+
+  const handleTourNext = useCallback(() => {
+    setTourStep((s) => {
+      if (s === "done") return "done";
+      const next = (s as number) + 1;
+      if (next >= 3) { setTourPhase("done"); markTourDone(); return "done"; }
+      return next as TourStep;
+    });
+  }, [markTourDone]);
+
+  const handleTourSkip = useCallback(() => {
+    setTourPhase("done"); setTourStep("done"); markTourDone();
+  }, [markTourDone]);
 
   const domains    = usePlatformStore((s) => s.domains);
   const budget     = usePlatformStore((s) => s.budget);
@@ -259,6 +293,11 @@ export default function PortfolioClient() {
             justifyContent: "center", gap: 0,
             marginBottom: 16, width: "100%",
           }}>
+            <div ref={budgetCardRef} style={{
+              display: "flex", alignItems: "stretch", justifyContent: "center", gap: 0,
+              maxWidth: 560, margin: "0 auto", width: "100%",
+              padding: 24,
+            }}>
             {/* Left — budget (the action) */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <div style={{
@@ -334,6 +373,7 @@ export default function PortfolioClient() {
                 {heroSub}
               </span>
             </div>
+            </div>
           </div>
 
           {/* Domain cost pills */}
@@ -406,7 +446,7 @@ export default function PortfolioClient() {
           </div>
 
           <div style={{ display: "flex", gap: T.gap, alignItems: "flex-start" }}>
-            <div style={{
+            <div ref={cardsRef} style={{
               flex: 1, minWidth: 0,
               display: "grid",
               gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
@@ -425,13 +465,24 @@ export default function PortfolioClient() {
                 />
               ))}
             </div>
-            <div style={{ width: 220, flexShrink: 0 }}>
+            <div ref={sidebarRef} style={{ width: 220, flexShrink: 0 }}>
               <AllocationSidebar budget={budget} targetX={targetX} tokens={T} />
             </div>
           </div>
         </div>
       </div>
 
+      {tourPhase === "tour" && (
+        <OnboardingOverlay
+          domain="portfolio"
+          step={tourStep}
+          onNext={handleTourNext}
+          onSkip={handleTourSkip}
+          refs={{ budget: budgetCardRef, cards: cardsRef, sidebar: sidebarRef }}
+        />
+      )}
+
+      <TutorButton onStartTour={startTour} toured={tourPhase === "done"} />
     </main>
   );
 }
