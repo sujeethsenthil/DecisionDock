@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine,
   ReferenceArea, Tooltip, ResponsiveContainer,
