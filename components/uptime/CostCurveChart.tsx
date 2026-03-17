@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine,
   ReferenceArea, Tooltip, ResponsiveContainer,
@@ -34,6 +34,11 @@ interface Props {
 export function CostCurveChart({ data, current, target, isUpgrade, onSetCurrent, tokens: T }: Props) {
   const color = zoneColor(target);
   const chartRef = useRef<HTMLDivElement>(null);
+  const [animate, setAnimate] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setAnimate(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const handleClick = (e: React.MouseEvent) => {
     const container = chartRef.current;
@@ -82,7 +87,7 @@ export function CostCurveChart({ data, current, target, isUpgrade, onSetCurrent,
             <ReferenceLine x={current} stroke={C.blue} strokeWidth={1.5} strokeDasharray="4 3" />
             {isUpgrade && <ReferenceLine x={target} stroke={color} strokeWidth={2} strokeDasharray="5 3" />}
             {isUpgrade && <ReferenceArea x1={current} x2={target} fill={color} fillOpacity={0.05} />}
-            <Area type="monotone" dataKey="cost" stroke={C.blue} strokeWidth={2.5} fill="url(#cg)" isAnimationActive animationDuration={350} animationEasing="ease-out" />
+            <Area type="monotone" dataKey="cost" stroke={C.blue} strokeWidth={2.5} fill="url(#cg)" isAnimationActive={animate} animationDuration={350} animationEasing="ease-out" />
             <Tooltip content={<ChartTooltip />} />
           </AreaChart>
         </ResponsiveContainer>

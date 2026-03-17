@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { C } from "@/lib/constants";
 import { useViewport, useTokens } from "@/lib/hooks";
+import { preloadChartForRoute } from "@/lib/preloadCharts";
 import { usePlatformStore } from "@/lib/store/platform";
 
 interface ModuleTab {
@@ -47,6 +49,14 @@ export function ModuleTabs() {
     const d = domains[key];
     return d.currentX !== 2 || d.targetX !== 3;
   };
+
+  // Prefetch other module routes so tab switch doesn't wait on route chunk load (fixes 2–3s first-visit delay)
+  useEffect(() => {
+    MODULES.filter((m) => m.live && m.route !== pathname).forEach((m) => {
+      router.prefetch(m.route);
+      preloadChartForRoute(m.route); // Chart chunks are not prefetched with the route
+    });
+  }, [router, pathname]);
 
   const nextRoute = NEXT_ROUTE[pathname];
 
@@ -102,6 +112,15 @@ export function ModuleTabs() {
 
             <button
               onClick={() => { if (mod.live && !isActive) router.push(mod.route); }}
+              onMouseEnter={() => {
+                if (mod.live && !isActive) {
+                  router.prefetch(mod.route);
+                  preloadChartForRoute(mod.route);
+                }
+              }}
+              onFocus={() => {
+                if (mod.live && !isActive) preloadChartForRoute(mod.route);
+              }}
               style={{
                 padding: T.tabPad,
                 fontSize: T.tabFs,
